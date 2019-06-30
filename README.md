@@ -4,7 +4,7 @@ This app connects to the PS2 real time web socket API and prints events as they 
 
 ## Run with Leiningen (Windows)
 
-Create a `run.bat` file and enter env vars
+Update `run.bat` file with appropriate values and then run:
 ```
 SET SERVICE_ID=<your service id>
 SET SUBSCRIBE_CHARACTER_IDS=<comma-separate list of ps2 character ids>
