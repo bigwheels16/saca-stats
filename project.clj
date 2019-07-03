@@ -5,6 +5,7 @@
             :url  "https://www.eclipse.org/legal/epl-2.0/"}
   :dependencies [[org.clojure/clojure "1.10.0"]
                  [stylefruits/gniazdo "1.1.1"]              ; web socket client
-                 [org.clojure/data.json "0.2.6"]]
+                 [org.clojure/data.json "0.2.6"]
+                 [clj-http "3.7.0"]]
   :main com.jkbff.ps2.real_time_stats.core
   :repl-options {:init-ns com.jkbff.ps2.real_time_stats.core})

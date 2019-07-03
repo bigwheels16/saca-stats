@@ -11,8 +11,8 @@
 
 (defn write-json
 	[msg]
-	(json/write-str msg :key-fn name))
+	(json/write-str msg :key-fn #(entities-fn (name %))))
 
 (defn read-json
 	[msg]
-	(json/read-str msg :key-fn keyword))
+	(json/read-str msg :key-fn #(keyword (identifiers-fn %))))
