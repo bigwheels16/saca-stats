@@ -32,12 +32,6 @@
                           m      (reduce #(assoc %1 (:experience-id %2) %2) {} (:experience-list body))]
                         m))))
 
-(def get-character-names
-    (memoize (fn [character-ids] (let [url    (str "http://census.daybreakgames.com/s:" (config/SERVICE_ID) "/get/ps2:v2/character/?character_id=" (clojure.string/join "," character-ids))
-                                       result (client/get url)
-                                       body   (helper/read-json (:body result))]
-                                     (:character-list body)))))
-
 (def get-characters
     (memoize (fn []
                  (let [char-names-lower (map #(clojure.string/trim (clojure.string/lower-case %)) (config/SUBSCRIBE_CHARACTERS))
