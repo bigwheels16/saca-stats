@@ -129,11 +129,16 @@
             "PlayerLogout" (print-summary payload)
             nil)))
 
+(defn handle-close
+    [status-code reason]
+    (println "Connection closed:" status-code reason))
+
 (defn connect
     []
     (->
         (ws/connect (str "wss://push.planetside2.com/streaming?environment=ps2&service-id=s:" (config/SERVICE_ID))
-                    :on-receive handle-message)
+                    :on-receive handle-message
+                    :on-close handle-close)
 
         (ws/send-msg (helper/write-json {:service    "event"
                                          :action     "subscribe"
