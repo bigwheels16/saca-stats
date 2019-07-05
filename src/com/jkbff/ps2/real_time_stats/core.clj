@@ -6,6 +6,8 @@
 
 (def char-exp (atom {}))
 
+(def white-color (* 256 256 256))
+
 (def sample (list
                 {:experience-id 278, :amount 150}
                 {:experience-id 38, :amount 25}
@@ -26,13 +28,21 @@
 
 (def get-experience-types
     (memoize (fn [] (let [result (client/get (str "https://census.daybreakgames.com/s:" (config/SERVICE_ID) "/get/ps2/experience?c:limit=2000"))
-                          list   (helper/read-json (:body result))
-                          m      (reduce #(assoc %1 (:experience-id %2) %2) {} (:experience-list list))]
+                          body   (helper/read-json (:body result))
+                          m      (reduce #(assoc %1 (:experience-id %2) %2) {} (:experience-list body))]
                         m))))
 
 (def get-character-names
-    (memoize (fn [character-ids] (let [result (client/get (str "http://census.daybreakgames.com/s:" (config/SERVICE_ID) "/get/ps2:v2/character/?character_id=" (config/SUBSCRIBE_CHARACTER_IDS)))]
-                                     ))))
+    (memoize (fn [character-ids] (let [url    (str "http://census.daybreakgames.com/s:" (config/SERVICE_ID) "/get/ps2:v2/character/?character_id=" (clojure.string/join "," character-ids))
+                                       result (client/get url)
+                                       body   (helper/read-json (:body result))]
+                                     (:character-list body)))))
+
+(defn get-name-by-char-id
+    [char-id]
+    (let [char-names (get-character-names (config/SUBSCRIBE_CHARACTER_IDS))
+          result     (first (filter #(= char-id (:character-id %)) char-names))]
+        (get-in result [:name :first])))
 
 (defn update-experience
     [char-exp-map payload]
@@ -40,38 +50,67 @@
     (let [character-id  (:character-id payload)
           experience-id (:experience-id payload)
           amount        (Integer/parseInt (:amount payload))
-          current-val   (or (get char-exp-map character-id) (list))
+          current-val   (or (get-in char-exp-map [character-id :experience-events]) (list))
           new-val       (cons {:experience-id experience-id :amount amount} current-val)]
 
-        (assoc char-exp-map character-id new-val)))
+        (assoc-in char-exp-map [character-id :experience-events] new-val)))
 
 (defn process-char-info
-    [m char-info]
+    [m experience-events]
 
-    (let [{experience-id :experience-id amount :amount} char-info]
+    (let [{experience-id :experience-id amount :amount} experience-events]
         (update m experience-id (fn [{current-amount :amount current-count :count}]
                                     {:amount (+ (or current-amount 0) amount) :count (inc (or current-count 0)) :experience-id experience-id}))))
 
-(defn get-char-stats-sorted
-    [char-info]
+(defn get-color-code
+    []
+    (rand-int (inc white-color)))
 
-    (let [processed (reduce process-char-info {} char-info)
+(defn get-char-stats-sorted
+    [experience-events]
+
+    (let [processed (reduce process-char-info {} experience-events)
           coll      (vals processed)]
 
         (reverse (sort-by :amount coll))))
+
+(defn send-message-to-discord
+    [char-name character-id summary vehicle-summary]
+    (let [obj  {:embeds [{:title       (str char-name " Stats Summary (" character-id ")")
+                          :type        "rich"
+                          :description summary
+                          :color       (get-color-code)
+                          :fields      [{:name "Vehicles" :value vehicle-summary}]}]}
+          json (helper/write-json obj)]
+
+        (client/post (config/DISCORD_WEBHOOK_URL) {:body    json
+                                                   :headers {"Content-Type" "application/json"}})))
+
+(defn format-exp-total
+    [exp-total]
+    (str (:amount exp-total) " (x" (:count exp-total) ") - " (or (:description exp-total) (:experience-id exp-total))))
 
 (defn print-summary
     [payload]
 
     (let [character-id           (:character-id payload)
+          char-name              (get-name-by-char-id character-id)
           char-info              (get @char-exp character-id)
-          most-exp-first         (take 10 (get-char-stats-sorted char-info))
+          most-exp-first         (take 5 (get-char-stats-sorted (:experience-events char-info)))
           exp-list               (get-experience-types)
-          exp-descriptions-added (map #(assoc % :description (get-in exp-list [(:experience-id %) :description])) most-exp-first)]
+          exp-descriptions-added (map #(assoc % :description (get-in exp-list [(:experience-id %) :description])) most-exp-first)
+          summary                (clojure.string/join "\n" (map format-exp-total exp-descriptions-added))]
 
-        (println "printing summary for" character-id)
-        (doseq [x exp-descriptions-added]
-            (println x))))
+        (println "sending summary for" char-name "(" character-id ")")
+        (send-message-to-discord char-name character-id summary "TODO")))
+
+(defn handle-login
+    [payload]
+    (let [character-id (:character-id payload)
+          char-name    (get-name-by-char-id character-id)
+          t            (System/currentTimeMillis)]
+        (swap! char-exp #(assoc %1 character-id {:logon t}))
+        (println "tracking character" char-name "(" character-id ")")))
 
 (defn handle-message
     [msg]
@@ -83,6 +122,7 @@
 
         (case (:event-name payload)
             "GainExperience" (swap! char-exp update-experience payload)
+            "PlayerLogin" (handle-login payload)
             "PlayerLogout" (print-summary payload)
             nil)))
 
