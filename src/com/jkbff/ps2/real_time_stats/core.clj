@@ -38,9 +38,18 @@
                                        body   (helper/read-json (:body result))]
                                      (:character-list body)))))
 
+(def get-characters
+    (memoize (fn []
+                 (let [char-names-lower (map #(clojure.string/trim (clojure.string/lower-case %)) (config/SUBSCRIBE_CHARACTERS))
+                       char-names-str   (clojure.string/join "," char-names-lower)
+                       url              (str "http://census.daybreakgames.com/s:" (config/SERVICE_ID) "/get/ps2/character?name.first_lower=" char-names-str "&c:limit=" (count char-names-lower))
+                       result           (client/get url)
+                       body             (helper/read-json (:body result))]
+                     (:character-list body)))))
+
 (defn get-name-by-char-id
     [char-id]
-    (let [char-names (get-character-names (config/SUBSCRIBE_CHARACTER_IDS))
+    (let [char-names (get-characters)
           result     (first (filter #(= char-id (:character-id %)) char-names))]
         (get-in result [:name :first])))
 
@@ -134,7 +143,7 @@
 
         (ws/send-msg (helper/write-json {:service    "event"
                                          :action     "subscribe"
-                                         :characters (config/SUBSCRIBE_CHARACTER_IDS)
+                                         :characters (map :character-id (get-characters))
                                          :eventNames (config/SUBSCRIBE_EVENTS)}))))
 
 (defn -main
