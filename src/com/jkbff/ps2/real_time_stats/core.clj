@@ -78,14 +78,15 @@
         (reverse (sort-by :amount coll))))
 
 (defn send-message-to-discord
-    [char-name character-id summary vehicle-summary]
+    [char-name character-id summary xp-summary]
     (let [obj  {:embeds [{:title       (str char-name " Stats Summary (" character-id ")")
                           :type        "rich"
                           :description summary
                           :color       (get-color-code)
-                          :fields      [{:name "Vehicles" :value vehicle-summary}]}]}
+                          :fields      [{:name "XP" :value (if (empty? xp-summary) "No XP" xp-summary)}]}]}
           json (helper/write-json obj)]
 
+        (println json)
         (client/post (config/DISCORD_WEBHOOK_URL) {:body    json
                                                    :headers {"Content-Type" "application/json"}})))
 
@@ -93,19 +94,38 @@
     [exp-total]
     (str (:amount exp-total) " (x" (:count exp-total) ") - " (or (:description exp-total) (:experience-id exp-total))))
 
-(defn print-summary
+(defn get-total-xp
+    [experience-events]
+    (reduce #(+ %1 (:amount %2)) 0 experience-events))
+
+(defn get-total-time
+    [logon-time]
+    (if logon-time
+        (- (System/currentTimeMillis) logon-time)))
+
+(defn get-overall-summary
+    [char-info]
+    (let [total-time (get-total-time (:logon char-info))
+          total-xp (get-total-xp (:experience-events char-info))
+          xp-per-min (if total-time (quot (* total-xp 60 1000) total-time) "Unknown")]
+        (str "Time: " (if total-time (str (quot total-time 1000) " secs") "Unknown")
+             "\nTotal XP: " total-xp
+             "\nXP / min: " xp-per-min)))
+
+(defn print-stats
     [payload]
 
     (let [character-id           (:character-id payload)
           char-name              (get-name-by-char-id character-id)
           char-info              (get @char-exp character-id)
-          most-exp-first         (take 5 (get-char-stats-sorted (:experience-events char-info)))
+          most-exp-first         (take 10 (get-char-stats-sorted (:experience-events char-info)))
           exp-list               (get-experience-types)
           exp-descriptions-added (map #(assoc % :description (get-in exp-list [(:experience-id %) :description])) most-exp-first)
-          summary                (clojure.string/join "\n" (map format-exp-total exp-descriptions-added))]
+          summary                (get-overall-summary char-info)
+          xp-summary             (clojure.string/join "\n" (map format-exp-total exp-descriptions-added))]
 
         (println "sending summary for" char-name "(" character-id ")")
-        (send-message-to-discord char-name character-id summary "TODO")))
+        (send-message-to-discord char-name character-id summary xp-summary)))
 
 (defn handle-login
     [payload]
@@ -117,17 +137,19 @@
 
 (defn handle-message
     [msg]
-    (let [obj     (helper/read-json msg)
-          payload (:payload obj)]
+    (try
+        (let [obj     (helper/read-json msg)
+              payload (:payload obj)]
 
-        ;(if (not= "heartbeat" (:type obj))
-        ;    (println obj))
+            ;(if (not= "heartbeat" (:type obj))
+            ;    (println obj))
 
-        (case (:event-name payload)
-            "GainExperience" (swap! char-exp update-experience payload)
-            "PlayerLogin" (handle-login payload)
-            "PlayerLogout" (print-summary payload)
-            nil)))
+            (case (:event-name payload)
+                "GainExperience" (swap! char-exp update-experience payload)
+                "PlayerLogin" (handle-login payload)
+                "PlayerLogout" (print-stats payload)
+                nil))
+        (catch Exception e (.printStackTrace e))))
 
 (defn handle-close
     [status-code reason]
