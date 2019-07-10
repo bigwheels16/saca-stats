@@ -107,10 +107,16 @@
     [char-info]
     (let [total-time (get-total-time (:logon char-info))
           total-xp (get-total-xp (:experience-events char-info))
-          xp-per-min (if total-time (quot (* total-xp 60 1000) total-time) "Unknown")]
+          xp-per-min (if total-time (quot (* total-xp 60 1000) total-time) "Unknown")
+          num-kills (count (:kills char-info))
+          num-deaths (count (:deaths char-info))
+          kd (float (/ num-kills (if (zero? num-deaths) 1 num-deaths)))]
         (str "Time: " (if total-time (str (quot total-time 1000) " secs") "Unknown")
              "\nTotal XP: " total-xp
-             "\nXP / min: " xp-per-min)))
+             "\nXP / min: " xp-per-min
+             "\nKills: " num-kills
+             "\nDeaths: " num-deaths
+             "\nK/D: " kd)))
 
 (defn print-stats
     [payload]
@@ -135,6 +141,17 @@
         (swap! char-exp #(assoc %1 character-id {:logon t}))
         (println "tracking character" char-name "(" character-id ")")))
 
+(defn append-value
+    [m ks v]
+    (update-in m ks #(cons v %1)))
+
+(defn handle-death
+    [payload]
+    (let [character-id (:character-id payload)
+          attacker-character-id    (:attacker-character-id payload)]
+        (swap! char-exp #(append-value %1 [character-id :deaths] payload))
+        (swap! char-exp #(append-value %1 [attacker-character-id :kills] payload))))
+
 (defn handle-message
     [msg]
     (try
@@ -148,6 +165,7 @@
                 "GainExperience" (swap! char-exp update-experience payload)
                 "PlayerLogin" (handle-login payload)
                 "PlayerLogout" (print-stats payload)
+                "Death" (handle-death payload)
                 nil))
         (catch Exception e (.printStackTrace e))))
 
