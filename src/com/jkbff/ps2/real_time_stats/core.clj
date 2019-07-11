@@ -8,24 +8,6 @@
 
 (def white-color (* 256 256 256))
 
-(def sample (list
-                {:experience-id 278, :amount 150}
-                {:experience-id 38, :amount 25}
-                {:experience-id 331, :amount 100}
-                {:experience-id 331, :amount 100}
-                {:experience-id 64, :amount 400}
-                {:experience-id 109, :amount 240}
-                {:experience-id 111, :amount 64}
-                {:experience-id 109, :amount 244}
-                {:experience-id 109, :amount 240}
-                {:experience-id 331, :amount 100}
-                {:experience-id 332, :amount 100}
-                {:experience-id 111, :amount 64}
-                {:experience-id 252, :amount 20}
-                {:experience-id 66, :amount 400}))
-
-(def sample2 (list {:experience-id 279, :amount 300} {:experience-id 37, :amount 10} {:experience-id 373, :amount 50} {:experience-id 389, :amount 25} {:experience-id 1, :amount 100} {:experience-id 373, :amount 50} {:experience-id 389, :amount 25} {:experience-id 373, :amount 50} {:experience-id 373, :amount 50} {:experience-id 389, :amount 25} {:experience-id 389, :amount 25} {:experience-id 335, :amount 25} {:experience-id 278, :amount 150} {:experience-id 29, :amount 200} {:experience-id 99, :amount 6} {:experience-id 99, :amount 6} {:experience-id 99, :amount 6} {:experience-id 291, :amount 250} {:experience-id 291, :amount 250} {:experience-id 99, :amount 6} {:experience-id 99, :amount 6} {:experience-id 2, :amount 48} {:experience-id 2, :amount 55} {:experience-id 2, :amount 50} {:experience-id 103, :amount 52} {:experience-id 1, :amount 100} {:experience-id 107, :amount 120} {:experience-id 2, :amount 85} {:experience-id 8, :amount 10} {:experience-id 1, :amount 100} {:experience-id 278, :amount 150} {:experience-id 8, :amount 10} {:experience-id 8, :amount 10} {:experience-id 1, :amount 100} {:experience-id 54, :amount 30} {:experience-id 1, :amount 100} {:experience-id 38, :amount 25} {:experience-id 1, :amount 100} {:experience-id 303, :amount 6} {:experience-id 109, :amount 68} {:experience-id 303, :amount 6} {:experience-id 303, :amount 6} {:experience-id 303, :amount 6} {:experience-id 303, :amount 6} {:experience-id 303, :amount 6} {:experience-id 2, :amount 56} {:experience-id 389, :amount 25} {:experience-id 38, :amount 25} {:experience-id 8, :amount 10} {:experience-id 1, :amount 100} {:experience-id 8, :amount 10} {:experience-id 1, :amount 100} {:experience-id 10, :amount 25} {:experience-id 8, :amount 10} {:experience-id 1, :amount 100} {:experience-id 2, :amount 100} {:experience-id 2, :amount 40} {:experience-id 8, :amount 10} {:experience-id 1, :amount 100} {:experience-id 8, :amount 10} {:experience-id 1, :amount 100} {:experience-id 2, :amount 28} {:experience-id 291, :amount 250} {:experience-id 37, :amount 10} {:experience-id 10, :amount 25} {:experience-id 8, :amount 10} {:experience-id 1, :amount 100} {:experience-id 2, :amount 48} {:experience-id 54, :amount 30} {:experience-id 8, :amount 10} {:experience-id 1, :amount 100} {:experience-id 389, :amount 25} {:experience-id 398, :amount 20} {:experience-id 109, :amount 168} {:experience-id 286, :amount 20} {:experience-id 302, :amount 6} {:experience-id 302, :amount 6} {:experience-id 302, :amount 6} {:experience-id 302, :amount 6} {:experience-id 302, :amount 6} {:experience-id 302, :amount 6} {:experience-id 302, :amount 6} {:experience-id 291, :amount 250} {:experience-id 291, :amount 250} {:experience-id 302, :amount 5} {:experience-id 302, :amount 6} {:experience-id 302, :amount 6} {:experience-id 302, :amount 3} {:experience-id 8, :amount 10} {:experience-id 1, :amount 100} {:experience-id 8, :amount 10} {:experience-id 1, :amount 100} {:experience-id 54, :amount 30} {:experience-id 8, :amount 10} {:experience-id 1, :amount 100} {:experience-id 385, :amount 200} {:experience-id 8, :amount 10} {:experience-id 1, :amount 100} {:experience-id 54, :amount 30} {:experience-id 10, :amount 25} {:experience-id 8, :amount 10} {:experience-id 1, :amount 100} {:experience-id 2, :amount 34} {:experience-id 1, :amount 100} {:experience-id 278, :amount 150} {:experience-id 303, :amount 6} {:experience-id 303, :amount 6} {:experience-id 303, :amount 6} {:experience-id 302, :amount 6} {:experience-id 302, :amount 6} {:experience-id 302, :amount 6} {:experience-id 302, :amount 6} {:experience-id 302, :amount 6} {:experience-id 302, :amount 6} {:experience-id 302, :amount 6} {:experience-id 302, :amount 6} {:experience-id 291, :amount 250} {:experience-id 291, :amount 750} {:experience-id 302, :amount 6} {:experience-id 302, :amount 5} {:experience-id 2, :amount 44} {:experience-id 303, :amount 6} {:experience-id 303, :amount 6} {:experience-id 303, :amount 6} {:experience-id 303, :amount 6} {:experience-id 302, :amount 6} {:experience-id 373, :amount 50} {:experience-id 278, :amount 150} {:experience-id 8, :amount 10} {:experience-id 291, :amount 2} {:experience-id 291, :amount 750} {:experience-id 10, :amount 25} {:experience-id 8, :amount 10} {:experience-id 1, :amount 100} {:experience-id 37, :amount 10} {:experience-id 8, :amount 10} {:experience-id 1, :amount 100} {:experience-id 279, :amount 300} {:experience-id 8, :amount 10} {:experience-id 336, :amount 0} {:experience-id 335, :amount 25} {:experience-id 8, :amount 10} {:experience-id 1, :amount 100} {:experience-id 37, :amount 10} {:experience-id 8, :amount 10} {:experience-id 37, :amount 10} {:experience-id 1, :amount 100} {:experience-id 372, :amount 186} {:experience-id 303, :amount 6} {:experience-id 303, :amount 6} {:experience-id 2, :amount 31} {:experience-id 1, :amount 100} {:experience-id 302, :amount 13} {:experience-id 110, :amount 105} {:experience-id 278, :amount 150} {:experience-id 8, :amount 10} {:experience-id 1, :amount 100} {:experience-id 2, :amount 48} {:experience-id 62, :amount 400} {:experience-id 38, :amount 25} {:experience-id 1, :amount 100} {:experience-id 304, :amount 102} {:experience-id 291, :amount 750} {:experience-id 107, :amount 120} {:experience-id 304, :amount 102} {:experience-id 304, :amount 102} {:experience-id 58, :amount 100} {:experience-id 2, :amount 41} {:experience-id 1, :amount 100} {:experience-id 1, :amount 100} {:experience-id 279, :amount 300} {:experience-id 291, :amount 750} {:experience-id 651, :amount 500}))
-
 (def get-experience-types
     (memoize (fn [] (let [result (client/get (str "https://census.daybreakgames.com/s:" (config/SERVICE_ID) "/get/ps2/experience?c:limit=2000"))
                           body   (helper/read-json (:body result))
@@ -78,15 +60,14 @@
         (reverse (sort-by :amount coll))))
 
 (defn send-message-to-discord
-    [char-name character-id summary xp-summary]
+    [char-name character-id description xp-summary]
     (let [obj  {:embeds [{:title       (str char-name " Stats Summary (" character-id ")")
                           :type        "rich"
-                          :description summary
+                          :description description
                           :color       (get-color-code)
-                          :fields      [{:name "XP" :value (if (empty? xp-summary) "No XP" xp-summary)}]}]}
+                          :fields      (filter :value xp-summary)}]}
           json (helper/write-json obj)]
 
-        (println json)
         (client/post (config/DISCORD_WEBHOOK_URL) {:body    json
                                                    :headers {"Content-Type" "application/json"}})))
 
@@ -106,11 +87,11 @@
 (defn get-overall-summary
     [char-info]
     (let [total-time (get-total-time (:logon char-info))
-          total-xp (get-total-xp (:experience-events char-info))
+          total-xp   (get-total-xp (:experience-events char-info))
           xp-per-min (if total-time (quot (* total-xp 60 1000) total-time) "Unknown")
-          num-kills (count (:kills char-info))
+          num-kills  (count (:kills char-info))
           num-deaths (count (:deaths char-info))
-          kd (float (/ num-kills (if (zero? num-deaths) 1 num-deaths)))]
+          kd         (float (/ num-kills (if (zero? num-deaths) 1 num-deaths)))]
         (str "Time: " (if total-time (str (quot total-time 1000) " secs") "Unknown")
              "\nTotal XP: " total-xp
              "\nXP / min: " xp-per-min
@@ -128,10 +109,11 @@
           exp-list               (get-experience-types)
           exp-descriptions-added (map #(assoc % :description (get-in exp-list [(:experience-id %) :description])) most-exp-first)
           summary                (get-overall-summary char-info)
-          xp-summary             (clojure.string/join "\n" (map format-exp-total exp-descriptions-added))]
+          xp-summary             (clojure.string/join "\n" (map format-exp-total exp-descriptions-added))
+          fields                 [{:name "XP (Top 10)" :value xp-summary}]]
 
         (println "sending summary for" char-name "(" character-id ")")
-        (send-message-to-discord char-name character-id summary xp-summary)))
+        (send-message-to-discord char-name character-id summary fields)))
 
 (defn handle-login
     [payload]
@@ -147,10 +129,17 @@
 
 (defn handle-death
     [payload]
-    (let [character-id (:character-id payload)
-          attacker-character-id    (:attacker-character-id payload)]
+    (let [character-id          (:character-id payload)
+          attacker-character-id (:attacker-character-id payload)]
         (swap! char-exp #(append-value %1 [character-id :deaths] payload))
         (swap! char-exp #(append-value %1 [attacker-character-id :kills] payload))))
+
+(defn handle-vehicle
+    [payload]
+    (let [character-id          (:character-id payload)
+          attacker-character-id (:attacker-character-id payload)]
+        (swap! char-exp #(append-value %1 [character-id :vehicle-deaths] payload))
+        (swap! char-exp #(append-value %1 [attacker-character-id :vehicle-kills] payload))))
 
 (defn handle-message
     [msg]
@@ -166,6 +155,7 @@
                 "PlayerLogin" (handle-login payload)
                 "PlayerLogout" (print-stats payload)
                 "Death" (handle-death payload)
+                "VehicleDestroy" (handle-vehicle payload)
                 nil))
         (catch Exception e (.printStackTrace e))))
 
