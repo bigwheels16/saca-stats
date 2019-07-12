@@ -23,6 +23,14 @@
                        body             (helper/read-json (:body result))]
                      (:character-list body)))))
 
+(def get-vehicles
+    (memoize (fn []
+                 (let [url          (str "http://census.daybreakgames.com/s:" (config/SERVICE_ID) "/get/ps2:v2/vehicle?c:limit=500&c:lang=en")
+                       result       (client/get url)
+                       body         (helper/read-json (:body result))
+                       vehicle-list (:vehicle-list body)]
+                     (zipmap (map :vehicle-id vehicle-list) vehicle-list)))))
+
 (defn get-name-by-char-id
     [char-id]
     (let [char-names (get-characters)
@@ -99,18 +107,28 @@
              "\nDeaths: " num-deaths
              "\nK/D: " kd)))
 
+(defn get-vehicle-stats
+    [char-info]
+    (let [vehicles-destroyed (:vehicle-kills char-info)
+          grouped            (group-by :vehicle-id vehicles-destroyed)
+          vehicle-map        (get-vehicles)
+          mapped             (map (fn [[k v]] {:vehicle-id k :name (get-in vehicle-map [k :name :en]) :amount (count v)}) grouped)]
+        (reverse (sort-by :amount mapped))))
+
 (defn print-stats
     [payload]
 
-    (let [character-id           (:character-id payload)
-          char-name              (get-name-by-char-id character-id)
-          char-info              (get @char-exp character-id)
-          most-exp-first         (take 10 (get-char-stats-sorted (:experience-events char-info)))
-          exp-list               (get-experience-types)
-          exp-descriptions-added (map #(assoc % :description (get-in exp-list [(:experience-id %) :description])) most-exp-first)
-          summary                (get-overall-summary char-info)
-          xp-summary             (clojure.string/join "\n" (map format-exp-total exp-descriptions-added))
-          fields                 [{:name "XP (Top 10)" :value xp-summary}]]
+    (let [character-id              (:character-id payload)
+          char-name                 (get-name-by-char-id character-id)
+          char-info                 (get @char-exp character-id)
+          most-exp-first            (take 10 (get-char-stats-sorted (:experience-events char-info)))
+          exp-list                  (get-experience-types)
+          exp-descriptions-added    (map #(assoc % :description (get-in exp-list [(:experience-id %) :description])) most-exp-first)
+          summary                   (get-overall-summary char-info)
+          xp-summary                (clojure.string/join "\n" (map format-exp-total exp-descriptions-added))
+          vehicle-destroyed-summary (clojure.string/join "\n" (map #(str "x" (:amount %1) " - " (:name %1)) (get-vehicle-stats char-info)))
+          fields                    [{:name "XP (Top 10)" :value xp-summary}
+                                     {:name "Vehicles Destroyed" :value vehicle-destroyed-summary}]]
 
         (println "sending summary for" char-name "(" character-id ")")
         (send-message-to-discord char-name character-id summary fields)))
