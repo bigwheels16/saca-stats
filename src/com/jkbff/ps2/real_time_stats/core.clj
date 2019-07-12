@@ -68,12 +68,12 @@
         (reverse (sort-by :amount coll))))
 
 (defn send-message-to-discord
-    [char-name character-id description xp-summary]
+    [char-name character-id description fields]
     (let [obj  {:embeds [{:title       (str char-name " Stats Summary (" character-id ")")
                           :type        "rich"
                           :description description
                           :color       (get-color-code)
-                          :fields      (filter :value xp-summary)}]}
+                          :fields      (filter #(not (clojure.string/blank? (:value %))) fields)}]}
           json (helper/write-json obj)]
 
         (client/post (config/DISCORD_WEBHOOK_URL) {:body    json
