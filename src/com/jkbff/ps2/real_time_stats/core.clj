@@ -8,6 +8,25 @@
 
 (def white-color (* 256 256 256))
 
+(def time-units [{:unit "hr" :amount 3600} {:unit "min" :amount 60} {:unit "sec" :amount 1}])
+
+(defn get-time-str
+    [timestamp]
+    (loop [units-left time-units
+           units-arr  []
+           time-left  timestamp]
+
+        (if (zero? time-left)
+            (clojure.string/join " " units-arr)
+
+            (let [next-unit (first units-left)
+                  amount    (quot time-left (:amount next-unit))
+                  remainder (rem time-left (:amount next-unit))]
+
+                (if (zero? amount)
+                    (recur (rest units-left) units-arr time-left)
+                    (recur (rest units-left) (conj units-arr (str amount " " (:unit next-unit))) remainder))))))
+
 (def get-experience-types
     (memoize (fn [] (let [result (client/get (str "https://census.daybreakgames.com/s:" (config/SERVICE_ID) "/get/ps2/experience?c:limit=2000"))
                           body   (helper/read-json (:body result))
@@ -100,7 +119,7 @@
           num-kills  (count (:kills char-info))
           num-deaths (count (:deaths char-info))
           kd         (float (/ num-kills (if (zero? num-deaths) 1 num-deaths)))]
-        (str "Time: " (if total-time (str (quot total-time 1000) " secs") "Unknown")
+        (str "Time: " (if total-time (get-time-str (quot total-time 1000)) "Unknown")
              "\nTotal XP: " total-xp
              "\nXP / min: " xp-per-min
              "\nKills: " num-kills
