@@ -2,6 +2,7 @@
     (:require [gniazdo.core :as ws]
               [com.jkbff.ps2.real_time_stats.helper :as helper]
               [com.jkbff.ps2.real_time_stats.config :as config]
+              [com.jkbff.ps2.real_time_stats.api :as api]
               [clj-http.client :as client]))
 
 (def char-exp (atom {}))
@@ -27,32 +28,9 @@
                     (recur (rest units-left) units-arr time-left)
                     (recur (rest units-left) (conj units-arr (str amount " " (:unit next-unit))) remainder))))))
 
-(def get-experience-types
-    (memoize (fn [] (let [result (client/get (str "https://census.daybreakgames.com/s:" (config/SERVICE_ID) "/get/ps2/experience?c:limit=2000"))
-                          body   (helper/read-json (:body result))
-                          m      (reduce #(assoc %1 (:experience-id %2) %2) {} (:experience-list body))]
-                        m))))
-
-(def get-characters
-    (memoize (fn []
-                 (let [char-names-lower (map #(clojure.string/trim (clojure.string/lower-case %)) (config/SUBSCRIBE_CHARACTERS))
-                       char-names-str   (clojure.string/join "," char-names-lower)
-                       url              (str "http://census.daybreakgames.com/s:" (config/SERVICE_ID) "/get/ps2/character?name.first_lower=" char-names-str "&c:limit=" (count char-names-lower))
-                       result           (client/get url)
-                       body             (helper/read-json (:body result))]
-                     (:character-list body)))))
-
-(def get-vehicles
-    (memoize (fn []
-                 (let [url          (str "http://census.daybreakgames.com/s:" (config/SERVICE_ID) "/get/ps2:v2/vehicle?c:limit=500&c:lang=en")
-                       result       (client/get url)
-                       body         (helper/read-json (:body result))
-                       vehicle-list (:vehicle-list body)]
-                     (zipmap (map :vehicle-id vehicle-list) vehicle-list)))))
-
 (defn get-name-by-char-id
     [char-id]
-    (let [char-names (get-characters)
+    (let [char-names (api/get-characters)
           result     (first (filter #(= char-id (:character-id %)) char-names))]
         (get-in result [:name :first])))
 
@@ -87,8 +65,8 @@
         (reverse (sort-by :amount coll))))
 
 (defn send-message-to-discord
-    [char-name character-id description fields]
-    (let [obj  {:embeds [{:title       (str char-name " Stats Summary (" character-id ")")
+    [title description fields]
+    (let [obj  {:embeds [{:title       title
                           :type        "rich"
                           :description description
                           :color       (get-color-code)
@@ -130,7 +108,7 @@
     [char-info]
     (let [vehicles-destroyed (:vehicle-kills char-info)
           grouped            (group-by :vehicle-id vehicles-destroyed)
-          vehicle-map        (get-vehicles)
+          vehicle-map        (api/get-vehicles)
           mapped             (map (fn [[k v]] {:vehicle-id k :name (get-in vehicle-map [k :name :en]) :amount (count v)}) grouped)]
         (reverse (sort-by :amount mapped))))
 
@@ -139,9 +117,10 @@
 
     (let [character-id              (:character-id payload)
           char-name                 (get-name-by-char-id character-id)
+          title                     (str char-name " Stats Summary (" character-id ")")
           char-info                 (get @char-exp character-id)
           most-exp-first            (take 10 (get-char-stats-sorted (:experience-events char-info)))
-          exp-list                  (get-experience-types)
+          exp-list                  (api/get-experience-types)
           exp-descriptions-added    (map #(assoc % :description (get-in exp-list [(:experience-id %) :description])) most-exp-first)
           summary                   (get-overall-summary char-info)
           xp-summary                (clojure.string/join "\n" (map format-exp-total exp-descriptions-added))
@@ -150,7 +129,7 @@
                                      {:name "Vehicles Destroyed" :value vehicle-destroyed-summary}]]
 
         (println "sending summary for" char-name "(" character-id ")")
-        (send-message-to-discord char-name character-id summary fields)))
+        (send-message-to-discord title summary fields)))
 
 (defn handle-login
     [payload]
@@ -178,14 +157,29 @@
         (swap! char-exp #(append-value %1 [character-id :vehicle-deaths] payload))
         (swap! char-exp #(append-value %1 [attacker-character-id :vehicle-kills] payload))))
 
+(defn handle-continent-lock
+    [payload]
+    (let [continents (api/get-continents)
+          continent-id (:zone-id payload)
+          continent (get continents continent-id)
+          message (str (:name continent) " has locked!")]
+        (send-message-to-discord message message (list))))
+
+(defn handle-continent-unlock
+    [payload]
+    (let [continent-id (:zone-id payload)
+          continent-name (get-in (api/get-continents) [continent-id :code])
+          message (str continent-name " has unlocked!")]
+        (send-message-to-discord message message (list))))
+
 (defn handle-message
     [msg]
     (try
         (let [obj     (helper/read-json msg)
               payload (:payload obj)]
 
-            ;(if (not= "heartbeat" (:type obj))
-            ;    (println obj))
+            (if (not= "heartbeat" (:type obj))
+                (println obj))
 
             (case (:event-name payload)
                 "GainExperience" (swap! char-exp update-experience payload)
@@ -193,6 +187,8 @@
                 "PlayerLogout" (print-stats payload)
                 "Death" (handle-death payload)
                 "VehicleDestroy" (handle-vehicle payload)
+                "ContinentLock" (handle-continent-lock payload)
+                "ContinentUnlock" (handle-continent-unlock payload)
                 nil))
         (catch Exception e (.printStackTrace e))))
 
@@ -209,7 +205,8 @@
 
         (ws/send-msg (helper/write-json {:service    "event"
                                          :action     "subscribe"
-                                         :characters (map :character-id (get-characters))
+                                         :characters (map :character-id (api/get-characters))
+                                         :worlds ["1"]
                                          :eventNames (config/SUBSCRIBE_EVENTS)}))))
 
 (defn -main
