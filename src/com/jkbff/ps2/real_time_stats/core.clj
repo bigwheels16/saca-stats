@@ -104,9 +104,17 @@
              "\nDeaths: " num-deaths
              "\nK/D: " kd)))
 
-(defn get-vehicle-stats
+(defn get-vehicle-kill-stats
     [char-info]
     (let [vehicles-destroyed (:vehicle-kills char-info)
+          grouped            (group-by :vehicle-id vehicles-destroyed)
+          vehicle-map        (api/get-vehicles)
+          mapped             (map (fn [[k v]] {:vehicle-id k :name (get-in vehicle-map [k :name :en]) :amount (count v)}) grouped)]
+        (reverse (sort-by :amount mapped))))
+
+(defn get-vehicle-lost-stats
+    [char-info]
+    (let [vehicles-destroyed (:vehicle-deaths char-info)
           grouped            (group-by :vehicle-id vehicles-destroyed)
           vehicle-map        (api/get-vehicles)
           mapped             (map (fn [[k v]] {:vehicle-id k :name (get-in vehicle-map [k :name :en]) :amount (count v)}) grouped)]
@@ -124,9 +132,11 @@
           exp-descriptions-added    (map #(assoc % :description (get-in exp-list [(:experience-id %) :description])) most-exp-first)
           summary                   (get-overall-summary char-info)
           xp-summary                (clojure.string/join "\n" (map format-exp-total exp-descriptions-added))
-          vehicle-destroyed-summary (clojure.string/join "\n" (map #(str "x" (:amount %1) " - " (:name %1)) (get-vehicle-stats char-info)))
+          vehicle-destroyed-summary (clojure.string/join "\n" (map #(str "x" (:amount %1) " - " (:name %1)) (get-vehicle-kill-stats char-info)))
+          vehicle-lost-summary      (clojure.string/join "\n" (map #(str "x" (:amount %1) " - " (:name %1)) (get-vehicle-lost-stats char-info)))
           fields                    [{:name "XP (Top 10)" :value xp-summary}
-                                     {:name "Vehicles Destroyed" :value vehicle-destroyed-summary}]]
+                                     {:name "Vehicles Destroyed" :value vehicle-destroyed-summary}
+                                     {:name "Vehicles Lost" :value vehicle-lost-summary}]]
 
         (helper/log "sending summary for" char-name "(" character-id ")")
         (send-message-to-discord title summary fields)))
@@ -159,10 +169,9 @@
 
 (defn handle-continent-lock
     [payload]
-    (let [continents   (api/get-continents)
-          continent-id (:zone-id payload)
-          continent    (get continents continent-id)
-          message      (str (:name continent) " has locked!")]
+    (let [continent-id   (:zone-id payload)
+          continent-name (get-in (api/get-continents) [continent-id :code])
+          message      (str continent-name " has locked!")]
         (send-message-to-discord message message (list))))
 
 (defn handle-continent-unlock
