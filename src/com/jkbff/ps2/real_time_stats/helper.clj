@@ -16,3 +16,8 @@
 (defn read-json
 	[msg]
 	(json/read-str msg :key-fn #(keyword (identifiers-fn %))))
+
+(defn log
+	[& args]
+	(locking *out*
+		(apply println args)))

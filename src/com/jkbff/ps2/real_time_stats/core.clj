@@ -128,7 +128,7 @@
           fields                    [{:name "XP (Top 10)" :value xp-summary}
                                      {:name "Vehicles Destroyed" :value vehicle-destroyed-summary}]]
 
-        (println "sending summary for" char-name "(" character-id ")")
+        (helper/log "sending summary for" char-name "(" character-id ")")
         (send-message-to-discord title summary fields)))
 
 (defn handle-login
@@ -137,7 +137,7 @@
           char-name    (get-name-by-char-id character-id)
           t            (System/currentTimeMillis)]
         (swap! char-exp #(assoc %1 character-id {:logon t}))
-        (println "tracking character" char-name "(" character-id ")")))
+        (helper/log "tracking character" char-name "(" character-id ")")))
 
 (defn append-value
     [m ks v]
@@ -179,7 +179,7 @@
               payload (:payload obj)]
 
             ;(if (not= "heartbeat" (:type obj))
-            ;    (println obj))
+            ;    (helper/log obj))
 
             (case (:event-name payload)
                 "GainExperience" (swap! char-exp update-experience payload)
@@ -194,7 +194,7 @@
 
 (defn handle-close
     [status-code reason]
-    (println "Connection closed:" status-code reason))
+    (helper/log "Connection closed:" status-code reason))
 
 (defn connect
     []
