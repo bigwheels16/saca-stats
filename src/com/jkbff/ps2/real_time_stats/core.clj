@@ -178,8 +178,8 @@
         (let [obj     (helper/read-json msg)
               payload (:payload obj)]
 
-            (if (not= "heartbeat" (:type obj))
-                (println obj))
+            ;(if (not= "heartbeat" (:type obj))
+            ;    (println obj))
 
             (case (:event-name payload)
                 "GainExperience" (swap! char-exp update-experience payload)
