@@ -176,7 +176,7 @@
 
 (defn handle-continent-unlock
     [payload]
-    (let [continent-id   (:zone-id payload)
+    (let [continent-id   (str (:zone-id payload))
           continent-name (get-in (api/get-continents) [continent-id :code])
           message        (str continent-name " has unlocked!")]
         (send-message-to-discord message message (list))))
