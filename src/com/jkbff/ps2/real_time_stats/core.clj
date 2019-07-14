@@ -169,16 +169,20 @@
 
 (defn handle-continent-lock
     [payload]
-    (let [continent-id   (:zone-id payload)
-          continent-name (get-in (api/get-continents) [continent-id :code])
-          message      (str continent-name " has locked!")]
+    (let [continent-id   (str (:zone-id payload))
+          world-id       (str (:world-id payload))
+          continent-name (get-in (api/get-continents) [continent-id :name :en])
+          world-name     (get-in (api/get-worlds) [world-id :name :en])
+          message        (str continent-name " has locked on " world-name "!")]
         (send-message-to-discord message message (list))))
 
 (defn handle-continent-unlock
     [payload]
     (let [continent-id   (str (:zone-id payload))
-          continent-name (get-in (api/get-continents) [continent-id :code])
-          message        (str continent-name " has unlocked!")]
+          world-id       (str (:world-id payload))
+          continent-name (get-in (api/get-continents) [continent-id :name :en])
+          world-name     (get-in (api/get-worlds) [world-id :name :en])
+          message        (str continent-name " has unlocked on " world-name "!")]
         (send-message-to-discord message message (list))))
 
 (defn handle-message

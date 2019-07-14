@@ -20,4 +20,4 @@
 (defn log
 	[& args]
 	(locking *out*
-		(apply println args)))
+		(apply prn args)))
