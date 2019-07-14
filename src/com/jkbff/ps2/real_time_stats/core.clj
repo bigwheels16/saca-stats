@@ -159,17 +159,17 @@
 
 (defn handle-continent-lock
     [payload]
-    (let [continents (api/get-continents)
+    (let [continents   (api/get-continents)
           continent-id (:zone-id payload)
-          continent (get continents continent-id)
-          message (str (:name continent) " has locked!")]
+          continent    (get continents continent-id)
+          message      (str (:name continent) " has locked!")]
         (send-message-to-discord message message (list))))
 
 (defn handle-continent-unlock
     [payload]
-    (let [continent-id (:zone-id payload)
+    (let [continent-id   (:zone-id payload)
           continent-name (get-in (api/get-continents) [continent-id :code])
-          message (str continent-name " has unlocked!")]
+          message        (str continent-name " has unlocked!")]
         (send-message-to-discord message message (list))))
 
 (defn handle-message
@@ -198,22 +198,31 @@
 
 (defn connect
     []
-    (->
-        (ws/connect (str "wss://push.planetside2.com/streaming?environment=ps2&service-id=s:" (config/SERVICE_ID))
-                    :on-receive handle-message
-                    :on-close handle-close)
+    (let [client1 (ws/connect (str "wss://push.planetside2.com/streaming?environment=ps2&service-id=s:" (config/SERVICE_ID))
+                              :on-receive handle-message
+                              :on-close handle-close)
 
-        (ws/send-msg (helper/write-json {:service    "event"
-                                         :action     "subscribe"
-                                         :characters (map :character-id (api/get-characters))
-                                         :worlds ["1"]
-                                         :eventNames (config/SUBSCRIBE_EVENTS)}))))
+          client2 (ws/connect (str "wss://push.planetside2.com/streaming?environment=ps2&service-id=s:" (config/SERVICE_ID))
+                              :on-receive handle-message
+                              :on-close handle-close)]
+
+        (ws/send-msg client1 (helper/write-json {:service    "event"
+                                                 :action     "subscribe"
+                                                 :characters (map :character-id (api/get-characters))
+                                                 :eventNames ["GainExperience" "PlayerLogin" "PlayerLogout" "Death" "VehicleDestroy"]}))
+
+        (ws/send-msg client2 (helper/write-json {:service    "event"
+                                                 :action     "subscribe"
+                                                 :worlds     ["1"]
+                                                 :eventNames ["ContinentLock" "ContinentUnlock" "MetagameEvent"]}))
+
+        [client1, client2]))
 
 (defn -main
     [& args]
 
     (let [is-running true
-          web-socket (connect)]
+          clients    (connect)]
 
         (while is-running
             (Thread/sleep 1000))))
