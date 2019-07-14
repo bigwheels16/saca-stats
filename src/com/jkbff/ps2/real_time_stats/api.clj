@@ -39,5 +39,5 @@
                  (let [url          (str "http://census.daybreakgames.com/s:" (config/SERVICE_ID) "/get/ps2:v2/world?c:limit=100&c:lang=en")
                        result       (client/get url)
                        body         (helper/read-json (:body result))
-                       zone-list (:zone-list body)]
-                     (zipmap (map :zone-id zone-list) zone-list)))))
+                       world-list   (:world-list body)]
+                     (zipmap (map :world-id world-list) world-list)))))
