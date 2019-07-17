@@ -3,36 +3,10 @@
               [com.jkbff.ps2.real_time_stats.helper :as helper]
               [com.jkbff.ps2.real_time_stats.config :as config]
               [com.jkbff.ps2.real_time_stats.api :as api]
-              [clj-http.client :as client]))
+              [com.jkbff.ps2.real_time_stats.summary :as summary]
+              [com.jkbff.ps2.real_time_stats.discord :as discord]))
 
 (def char-exp (atom {}))
-
-(def white-color (* 256 256 256))
-
-(def time-units [{:unit "hr" :amount 3600} {:unit "min" :amount 60} {:unit "sec" :amount 1}])
-
-(defn get-time-str
-    [timestamp]
-    (loop [units-left time-units
-           units-arr  []
-           time-left  timestamp]
-
-        (if (zero? time-left)
-            (clojure.string/join " " units-arr)
-
-            (let [next-unit (first units-left)
-                  amount    (quot time-left (:amount next-unit))
-                  remainder (rem time-left (:amount next-unit))]
-
-                (if (zero? amount)
-                    (recur (rest units-left) units-arr time-left)
-                    (recur (rest units-left) (conj units-arr (str amount " " (:unit next-unit))) remainder))))))
-
-(defn get-name-by-char-id
-    [char-id]
-    (let [char-names (api/get-characters)
-          result     (first (filter #(= char-id (:character-id %)) char-names))]
-        (get-in result [:name :first])))
 
 (defn update-experience
     [char-exp-map payload]
@@ -45,109 +19,13 @@
 
         (assoc-in char-exp-map [character-id :experience-events] new-val)))
 
-(defn process-char-info
-    [m experience-events]
-
-    (let [{experience-id :experience-id amount :amount} experience-events]
-        (update m experience-id (fn [{current-amount :amount current-count :count}]
-                                    {:amount (+ (or current-amount 0) amount) :count (inc (or current-count 0)) :experience-id experience-id}))))
-
-(defn get-color-code
-    []
-    (rand-int (inc white-color)))
-
-(defn get-char-stats-sorted
-    [experience-events]
-
-    (let [processed (reduce process-char-info {} experience-events)
-          coll      (vals processed)]
-
-        (reverse (sort-by :amount coll))))
-
-(defn send-message-to-discord
-    [title description fields]
-    (let [obj  {:embeds [{:title       title
-                          :type        "rich"
-                          :description description
-                          :color       (get-color-code)
-                          :fields      (filter #(not (clojure.string/blank? (:value %))) fields)}]}
-          json (helper/write-json obj)]
-
-        (client/post (config/DISCORD_WEBHOOK_URL) {:body    json
-                                                   :headers {"Content-Type" "application/json"}})))
-
-(defn format-exp-total
-    [exp-total]
-    (str (:amount exp-total) " (x" (:count exp-total) ") - " (or (:description exp-total) (:experience-id exp-total))))
-
-(defn get-total-xp
-    [experience-events]
-    (reduce #(+ %1 (:amount %2)) 0 experience-events))
-
-(defn get-total-time
-    [logon-time]
-    (if logon-time
-        (- (System/currentTimeMillis) logon-time)))
-
-(defn get-overall-summary
-    [char-info]
-    (let [total-time (get-total-time (:logon char-info))
-          total-xp   (get-total-xp (:experience-events char-info))
-          xp-per-min (if total-time (quot (* total-xp 60 1000) total-time) "Unknown")
-          num-kills  (count (:kills char-info))
-          num-deaths (count (:deaths char-info))
-          kd         (float (/ num-kills (if (zero? num-deaths) 1 num-deaths)))]
-        (str "Time: " (if total-time (get-time-str (quot total-time 1000)) "Unknown")
-             "\nTotal XP: " total-xp
-             "\nXP / min: " xp-per-min
-             "\nKills: " num-kills
-             "\nDeaths: " num-deaths
-             "\nK/D: " kd)))
-
-(defn get-vehicle-kill-stats
-    [char-info]
-    (let [vehicles-destroyed (:vehicle-kills char-info)
-          grouped            (group-by :vehicle-id vehicles-destroyed)
-          vehicle-map        (api/get-vehicles)
-          mapped             (map (fn [[k v]] {:vehicle-id k :name (get-in vehicle-map [k :name :en]) :amount (count v)}) grouped)]
-        (reverse (sort-by :amount mapped))))
-
-(defn get-vehicle-lost-stats
-    [char-info]
-    (let [vehicles-destroyed (:vehicle-deaths char-info)
-          grouped            (group-by :vehicle-id vehicles-destroyed)
-          vehicle-map        (api/get-vehicles)
-          mapped             (map (fn [[k v]] {:vehicle-id k :name (get-in vehicle-map [k :name :en]) :amount (count v)}) grouped)]
-        (reverse (sort-by :amount mapped))))
-
-(defn print-stats
-    [payload]
-
-    (let [character-id              (:character-id payload)
-          char-name                 (get-name-by-char-id character-id)
-          title                     (str char-name " Stats Summary (" character-id ")")
-          char-info                 (get @char-exp character-id)
-          most-exp-first            (take 10 (get-char-stats-sorted (:experience-events char-info)))
-          exp-list                  (api/get-experience-types)
-          exp-descriptions-added    (map #(assoc % :description (get-in exp-list [(:experience-id %) :description])) most-exp-first)
-          summary                   (get-overall-summary char-info)
-          xp-summary                (clojure.string/join "\n" (map format-exp-total exp-descriptions-added))
-          vehicle-destroyed-summary (clojure.string/join "\n" (map #(str "x" (:amount %1) " - " (:name %1)) (get-vehicle-kill-stats char-info)))
-          vehicle-lost-summary      (clojure.string/join "\n" (map #(str "x" (:amount %1) " - " (:name %1)) (get-vehicle-lost-stats char-info)))
-          fields                    [{:name "XP (Top 10)" :value xp-summary}
-                                     {:name "Vehicles Destroyed" :value vehicle-destroyed-summary}
-                                     {:name "Vehicles Lost" :value vehicle-lost-summary}]]
-
-        (helper/log "sending summary for" char-name "(" character-id ")")
-        (send-message-to-discord title summary fields)))
-
 (defn handle-login
     [payload]
     (let [character-id (:character-id payload)
-          char-name    (get-name-by-char-id character-id)
+          char-name    (get-in (api/get-characters) [character-id :name :first])
           t            (System/currentTimeMillis)]
         (swap! char-exp #(assoc %1 character-id {:logon t}))
-        (helper/log "tracking character" char-name "(" character-id ")")))
+        (helper/log (str "tracking character " char-name " (" character-id ")"))))
 
 (defn append-value
     [m ks v]
@@ -174,7 +52,7 @@
           continent-name (get-in (api/get-continents) [continent-id :name :en])
           world-name     (get-in (api/get-worlds) [world-id :name :en])
           message        (str continent-name " has locked on " world-name "!")]
-        (send-message-to-discord message message (list))))
+        (discord/send-message message message (list))))
 
 (defn handle-continent-unlock
     [payload]
@@ -183,7 +61,7 @@
           continent-name (get-in (api/get-continents) [continent-id :name :en])
           world-name     (get-in (api/get-worlds) [world-id :name :en])
           message        (str continent-name " has unlocked on " world-name "!")]
-        (send-message-to-discord message message (list))))
+        (discord/send-message message message (list))))
 
 (defn handle-message
     [msg]
@@ -197,7 +75,7 @@
             (case (:event-name payload)
                 "GainExperience" (swap! char-exp update-experience payload)
                 "PlayerLogin" (handle-login payload)
-                "PlayerLogout" (print-stats payload)
+                "PlayerLogout" (summary/print-stats payload char-exp)
                 "Death" (handle-death payload)
                 "VehicleDestroy" (handle-vehicle payload)
                 "ContinentLock" (handle-continent-lock payload)
@@ -221,7 +99,7 @@
 
         (ws/send-msg client1 (helper/write-json {:service    "event"
                                                  :action     "subscribe"
-                                                 :characters (map :character-id (api/get-characters))
+                                                 :characters (keys (api/get-characters))
                                                  :eventNames ["GainExperience" "PlayerLogin" "PlayerLogout" "Death" "VehicleDestroy"]}))
 
         (ws/send-msg client2 (helper/write-json {:service    "event"
