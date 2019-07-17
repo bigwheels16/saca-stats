@@ -33,18 +33,20 @@
 
 (defn get-overall-summary
     [char-info]
-    (let [total-time (get-total-time (:logon char-info))
-          total-xp   (get-total-xp (:experience-events char-info))
-          xp-per-min (if total-time (quot (* total-xp 60 1000) total-time) "Unknown")
-          num-kills  (count (:kills char-info))
-          num-deaths (count (:deaths char-info))
-          kd         (float (/ num-kills (if (zero? num-deaths) 1 num-deaths)))]
+    (let [total-time        (get-total-time (:logon char-info))
+          total-xp          (get-total-xp (:experience-events char-info))
+          xp-per-min        (if total-time (quot (* total-xp 60 1000) total-time) "Unknown")
+          num-kills         (count (:kills char-info))
+          num-deaths        (count (:deaths char-info))
+          kd                (float (/ num-kills (if (zero? num-deaths) 1 num-deaths)))
+          vehicle-map       (api/get-vehicles)
+          nanites-used      (reduce + 0 (map #(get-in vehicle-map [(:vehicle-id %) :cost] 0) (:vehicle-deaths char-info)))
+          nanites-destroyed (reduce + 0 (map #(get-in vehicle-map [(:vehicle-id %) :cost] 0) (:vehicle-kills char-info)))
+          nanite-efficiency (float (/ nanites-destroyed (if (zero? nanites-used) 1 nanites-used)))]
         (str "Time: " (if total-time (helper/get-time-str (quot total-time 1000)) "Unknown")
-             "\nTotal XP: " total-xp
-             "\nXP / min: " xp-per-min
-             "\nKills: " num-kills
-             "\nDeaths: " num-deaths
-             "\nK/D: " kd)))
+             "\nTotal XP: `" total-xp "` XP / min: `" xp-per-min "`"
+             "\nKills: `" num-kills "` Deaths: `" num-deaths "` K/D: `" kd "`"
+             "\nNanites Used: `" nanites-used "` Nanites Destroyed: `" nanites-destroyed "` Nanite Efficiency: `" nanite-efficiency "`")))
 
 (defn get-vehicle-kill-stats
     [char-info]
