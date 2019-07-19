@@ -35,15 +35,21 @@
     [payload]
     (let [character-id          (:character-id payload)
           attacker-character-id (:attacker-character-id payload)]
+
         (swap! char-exp #(append-value %1 [character-id :deaths] payload))
-        (swap! char-exp #(append-value %1 [attacker-character-id :kills] payload))))
+
+        (if (not= character-id attacker-character-id)
+            (swap! char-exp #(append-value %1 [attacker-character-id :kills] payload)))))
 
 (defn handle-vehicle
     [payload]
     (let [character-id          (:character-id payload)
           attacker-character-id (:attacker-character-id payload)]
+
         (swap! char-exp #(append-value %1 [character-id :vehicle-deaths] payload))
-        (swap! char-exp #(append-value %1 [attacker-character-id :vehicle-kills] payload))))
+
+        (if (not= character-id attacker-character-id)
+            (swap! char-exp #(append-value %1 [attacker-character-id :vehicle-kills] payload)))))
 
 (defn handle-continent-lock
     [payload]
