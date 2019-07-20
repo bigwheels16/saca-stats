@@ -53,16 +53,18 @@
     (let [vehicles-destroyed (:vehicle-kills char-info)
           grouped            (group-by :vehicle-id vehicles-destroyed)
           vehicle-map        (api/get-vehicles)
-          mapped             (map (fn [[k v]] {:vehicle-id k :name (get-in vehicle-map [k :name :en]) :amount (count v)}) grouped)]
-        (reverse (sort-by :amount mapped))))
+          mapped             (map (fn [[k v]] {:vehicle-id k :name (get-in vehicle-map [k :name :en]) :amount (count v)}) grouped)
+          filtered           (filter #(get-in vehicle-map [(:vehicle-id %) :cost]) mapped)]
+        (reverse (sort-by :amount filtered))))
 
 (defn get-vehicle-lost-stats
     [char-info]
     (let [vehicles-destroyed (:vehicle-deaths char-info)
           grouped            (group-by :vehicle-id vehicles-destroyed)
           vehicle-map        (api/get-vehicles)
-          mapped             (map (fn [[k v]] {:vehicle-id k :name (get-in vehicle-map [k :name :en]) :amount (count v)}) grouped)]
-        (reverse (sort-by :amount mapped))))
+          mapped             (map (fn [[k v]] {:vehicle-id k :name (get-in vehicle-map [k :name :en]) :amount (count v)}) grouped)
+          filtered           (filter #(get-in vehicle-map [(:vehicle-id %) :cost]) mapped)]
+        (reverse (sort-by :amount filtered))))
 
 (defn print-stats
     [payload char-exp]
