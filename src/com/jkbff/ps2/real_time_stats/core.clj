@@ -122,8 +122,11 @@
 (defn -main
     [& args]
 
-    (let [is-running true
-          clients    (connect)]
+    (let [is-running  true
+          clients     (connect)
+          startup-msg "SACA Stats has started!"]
+
+        (discord/send-message startup-msg startup-msg [])
 
         (while is-running
             (Thread/sleep 1000))))
