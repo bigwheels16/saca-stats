@@ -58,8 +58,9 @@
           continent-name (get-in (api/get-continents) [continent-id :name :en])
           world-name     (get-in (api/get-worlds) [world-id :name :en])
           message        (str continent-name " has locked on " world-name "!")]
-        (helper/log payload)
-        (discord/send-message message message (list))))
+
+        (if continent-name
+            (discord/send-message message message (list)))))
 
 (defn handle-continent-unlock
     [payload]
@@ -68,7 +69,9 @@
           continent-name (get-in (api/get-continents) [continent-id :name :en])
           world-name     (get-in (api/get-worlds) [world-id :name :en])
           message        (str continent-name " has unlocked on " world-name "!")]
-        (discord/send-message message message (list))))
+
+        (if continent-name
+            (discord/send-message message message (list)))))
 
 (defn handle-message
     [msg]
