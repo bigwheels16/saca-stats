@@ -84,5 +84,9 @@
                                      {:name "Vehicles Destroyed" :value vehicle-destroyed-summary}
                                      {:name "Vehicles Lost" :value vehicle-lost-summary}]]
 
-        (helper/log (str "sending summary for " char-name " (" character-id ")"))
-        (discord/send-message title summary fields)))
+        (if (not (empty? most-exp-first))
+            (do
+                (helper/log (str "sending summary for " char-name " (" character-id ")"))
+                (discord/send-message title summary fields))
+
+            (helper/log (str "no summary for " char-name " (" character-id ")")))))
