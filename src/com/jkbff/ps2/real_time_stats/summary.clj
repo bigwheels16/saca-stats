@@ -50,7 +50,7 @@
 
 (defn get-vehicle-kill-stats
     [char-info]
-    (let [vehicles-destroyed (:vehicle-kills char-info)
+    (let [vehicles-destroyed (filter #(not= "0" (:attacker-vehicle-id %)) (:vehicle-kills char-info)) ; only count vehicles destroyed from a vehicle
           grouped            (group-by :vehicle-id vehicles-destroyed)
           vehicle-map        (api/get-vehicles)
           mapped             (map (fn [[k v]] {:vehicle-id k :name (get-in vehicle-map [k :name :en]) :amount (count v)}) grouped)
