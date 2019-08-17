@@ -4,7 +4,7 @@ type: docker
 name: default
 
 steps:
-- name: build:
+- name: build
   image: docker
   commands:
   - ls
