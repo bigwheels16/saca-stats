@@ -30,5 +30,4 @@ volumes:
     path: /var/run/docker.sock
 - name: docker-compose
   host:
-    path:
-      from_secret: DOCKER_COMPOSE_YAML_DIR
+    path: $${DOCKER_COMPOSE_YAML_DIR}
