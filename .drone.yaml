@@ -1,0 +1,12 @@
+pipeline:
+  build:
+    image: docker
+    commands:
+      - ls
+      - cd /docker
+      - ls
+    secrets:
+      - docker_compose_yaml_dir
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${docker_compose_yaml_dir}:/docker
