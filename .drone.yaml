@@ -1,12 +1,25 @@
-pipeline:
-  build:
-    image: docker
-    commands:
-      - ls
-      - cd /docker
-      - ls
-    secrets:
-      - docker_compose_yaml_dir
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - /home:/docker
+kind: pipeline
+name: default
+
+steps:
+- name: build:
+  image: docker
+  commands:
+    - ls
+    - cd /docker-dir
+    - ls
+  secrets:
+    - DOCKER_COMPOSE_YAML_DIR
+  volumes:
+    - name: docker
+      path: /var/run/docker.sock
+    - name: docker-compose
+      path: /docker-dir
+
+volumes:
+- name: docker
+  host:
+    path: /var/run/docker.sock
+- name: docker-compose
+  host:
+    path: ${DOCKER_COMPOSE_YAML_DIR}
