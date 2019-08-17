@@ -9,4 +9,4 @@ pipeline:
       - docker_compose_yaml_dir
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ${DOCKER_COMPOSE_YAML_DIR}:/docker
+      - /home:/docker
