@@ -9,7 +9,8 @@ steps:
   commands:
   - ls
   - echo ${DOCKER_COMPOSE_YAML_DIR}
-  - env
+  - cd /docker
+  - ls
   secrets: [ DOCKER_COMPOSE_YAML_DIR ]
   environment:
     DOCKER_COMPOSE_YAML_DIR:
@@ -17,7 +18,7 @@ steps:
   volumes:
   - name: docker
     path: /var/run/docker.sock
-  - name: docker-dir
+  - name: docker-compose
     path: /docker
 
 volumes:
