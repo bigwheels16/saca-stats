@@ -22,8 +22,8 @@
 (def get-experience-types
     (memoize (fn [] (let [result   (client/get (str "https://census.daybreakgames.com/s:" (config/SERVICE_ID) "/get/ps2/experience?c:limit=2000"))
                           body     (helper/read-json (:body result))
-                          exp-list (:experience-list body)]
-                        (zipmap (map :experience-id exp-list) exp-list)))))
+                          coll     (:experience-list body)]
+                        (zipmap (map :experience-id coll) coll)))))
 
 (def get-characters
     (memoize (fn []
@@ -32,17 +32,16 @@
                        url              (str "http://census.daybreakgames.com/s:" (config/SERVICE_ID) "/get/ps2/character?name.first_lower=" char-names-str "&c:limit=" (count char-names-lower))
                        result           (client/get url)
                        body             (helper/read-json (:body result))
-                       char-list        (:character-list body)]
-
-                     (zipmap (map :character-id char-list) char-list)))))
+                       coll             (:character-list body)]
+                     (zipmap (map :character-id coll) coll)))))
 
 (def get-vehicles
     (memoize (fn []
                  (let [url          (str "http://census.daybreakgames.com/s:" (config/SERVICE_ID) "/get/ps2:v2/vehicle?c:limit=500&c:lang=en")
                        result       (client/get url)
                        body         (helper/read-json (:body result))
-                       vehicle-list (map #(select-keys % [:vehicle-id :name]) (:vehicle-list body))
-                       m            (zipmap (map :vehicle-id vehicle-list) vehicle-list)]
+                       coll         (map #(select-keys % [:vehicle-id :name]) (:vehicle-list body))
+                       m            (zipmap (map :vehicle-id coll) coll)]
                      (helper/deep-merge m vehicle-costs)))))
 
 (def get-continents
@@ -50,13 +49,21 @@
                  (let [url       (str "http://census.daybreakgames.com/s:" (config/SERVICE_ID) "/get/ps2:v2/zone?c:limit=500&c:lang=en")
                        result    (client/get url)
                        body      (helper/read-json (:body result))
-                       zone-list (:zone-list body)]
-                     (zipmap (map :zone-id zone-list) zone-list)))))
+                       coll      (:zone-list body)]
+                     (zipmap (map :zone-id coll) coll)))))
 
 (def get-worlds
     (memoize (fn []
                  (let [url        (str "http://census.daybreakgames.com/s:" (config/SERVICE_ID) "/get/ps2:v2/world?c:limit=100&c:lang=en")
                        result     (client/get url)
                        body       (helper/read-json (:body result))
-                       world-list (:world-list body)]
-                     (zipmap (map :world-id world-list) world-list)))))
+                       coll       (:world-list body)]
+                     (zipmap (map :world-id coll) coll)))))
+
+(def get-loadouts
+    (memoize (fn []
+                 (let [url          (str "http://census.daybreakgames.com/s:" (config/SERVICE_ID) "/get/ps2:v2/loadout?c:limit=500&c:lang=en")
+                       result       (client/get url)
+                       body         (helper/read-json (:body result))
+                       coll         (:loadout-list body)]
+                     (zipmap (map :loadout-id coll) coll)))))
