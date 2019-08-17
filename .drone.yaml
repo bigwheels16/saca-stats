@@ -11,6 +11,9 @@ steps:
   - echo ${DOCKER_COMPOSE_YAML_DIR}
   - env
   secrets: [ DOCKER_COMPOSE_YAML_DIR ]
+  environment:
+    DOCKER_COMPOSE_YAML_DIR:
+      from_secret: DOCKER_COMPOSE_YAML_DIR
   volumes:
   - name: docker
     path: /var/run/docker.sock
