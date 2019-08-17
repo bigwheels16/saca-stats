@@ -8,10 +8,9 @@ steps:
   image: docker
   commands:
   - ls
-  - "echo ${DOCKER_COMPOSE_YAML_DIR}"
+  - echo ${DOCKER_COMPOSE_YAML_DIR}
   - env
-  secrets:
-  - DOCKER_COMPOSE_YAML_DIR
+  secrets: [ DOCKER_COMPOSE_YAML_DIR ]
   volumes:
   - name: docker
     path: /var/run/docker.sock
