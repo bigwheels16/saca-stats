@@ -4,11 +4,21 @@ type: docker
 name: default
 
 steps:
-- name: build
+- name: update
+  image: alpine/git
+  commands:
+    - cd /var/docker/saca-stats
+    - git pull
+  volumes:
+    - name: docker-dir
+      path: /var/docker
+
+- name: redeploy
   image: docker
   commands:
-  - cd /var/docker
-  - ls
+  - cd /var/docker/saca-stats
+  - docker-compose stop saca-stats
+  - docker-compose up -d saca-stats
   volumes:
   - name: docker-socket
     path: /var/run/docker.sock
