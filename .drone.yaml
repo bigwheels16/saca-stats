@@ -13,7 +13,7 @@ steps:
   - name: docker-socket
     path: /var/run/docker.sock
   - name: docker-dir
-      path: /var/docker
+    path: /var/docker
 
 volumes:
 - name: docker-socker
