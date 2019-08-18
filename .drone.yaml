@@ -14,7 +14,7 @@ steps:
       path: /var/docker
 
 - name: redeploy
-  image: docker/compose
+  image: docker/compose:1.24.1
   commands:
   - cd /var/docker/saca-stats
   - docker-compose stop saca-stats
