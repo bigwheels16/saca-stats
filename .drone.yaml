@@ -17,8 +17,8 @@ steps:
   image: docker/compose:1.24.1
   commands:
   - cd /var/docker/saca-stats
-  - docker-compose stop saca-stats
-  - docker-compose up -d saca-stats
+  - sudo docker-compose stop saca-stats
+  - sudo docker-compose up -d saca-stats
   volumes:
   - name: docker-socket
     path: /var/run/docker.sock
