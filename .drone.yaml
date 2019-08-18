@@ -14,7 +14,7 @@ steps:
       path: /var/docker
 
 - name: redeploy
-  image: docker/compose:1.24.1
+  image: dduportal/docker-compose
   commands:
   - cd /var/docker/saca-stats
   - sudo docker-compose stop saca-stats
