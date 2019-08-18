@@ -17,6 +17,7 @@ steps:
   image: dduportal/docker-compose
   commands:
   - cd /var/docker/saca-stats
+  - docker ps
   - docker-compose stop saca-stats
   - docker-compose up -d saca-stats
   volumes:
