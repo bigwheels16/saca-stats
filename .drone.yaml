@@ -4,32 +4,8 @@ type: docker
 name: default
 
 steps:
-- name: update
-  image: alpine/git
-  commands:
-    - cd /var/docker/saca-stats
-    - git pull
-  volumes:
-    - name: docker-dir
-      path: /var/docker
-
-- name: redeploy
-  image: dduportal/docker-compose
-  commands:
-  - cd /var/docker/saca-stats
-  - docker ps
-  - docker-compose stop saca-stats
-  - docker-compose up -d saca-stats
-  volumes:
-  - name: docker-socket
-    path: /var/run/docker.sock
-  - name: docker-dir
-    path: /var/docker
-
-volumes:
-- name: docker-socker
-  host:
-    path: /var/run/docker.sock
-- name: docker-dir
-  host:
-    path: /var/docker
+  - name: docker
+    image: plugins/docker
+    settings:
+      repo: docker.jkbff.com/saca-stats
+      tags: latest

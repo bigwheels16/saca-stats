@@ -4,5 +4,6 @@ WORKDIR /app
 
 COPY project.clj project.clj
 RUN lein deps
+COPY ./ ./
 
 CMD ["./start.sh"]
