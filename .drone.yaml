@@ -8,12 +8,3 @@ steps:
     settings:
       repo: docker.jkbff.com/saca-stats
       tags: latest
-
-  - name: deploy
-    image: quay.io/honestbee/drone-kubernetes
-    kubernetes_server: {KUBERNETES_SERVER}
-    kubernetes_token: {KUBERNETES_TOKEN}
-    namespace: default
-    deployment: saca-stats-deployment
-    repo: docker.jkbff.com/saca-stats
-    tag: latest
