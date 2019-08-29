@@ -40,13 +40,26 @@
           num-deaths        (count (:deaths char-info))
           kd                (float (/ num-kills (if (zero? num-deaths) 1 num-deaths)))
           vehicle-map       (api/get-vehicles)
-          nanites-used      (reduce + 0 (map #(get-in vehicle-map [(:vehicle-id %) :cost] 0) (:vehicle-deaths char-info)))
-          nanites-destroyed (reduce + 0 (map #(get-in vehicle-map [(:vehicle-id %) :cost] 0) (:vehicle-kills char-info)))
-          nanite-efficiency (float (/ nanites-destroyed (if (zero? nanites-used) 1 nanites-used)))]
+          vehicles-used      (reduce + 0 (map #(get-in vehicle-map [(:vehicle-id %) :cost] 0) (:vehicle-deaths char-info)))
+          vehicles-destroyed (reduce + 0 (map #(get-in vehicle-map [(:vehicle-id %) :cost] 0) (:vehicle-kills char-info)))
+          nanite-efficiency (float (/ vehicles-destroyed (if (zero? vehicles-used) 1 vehicles-used)))]
         (str "Time: " (if total-time (helper/get-time-str (quot total-time 1000)) "Unknown")
              "\nTotal XP: `" total-xp "` XP / min: `" xp-per-min "`"
              "\nKills: `" num-kills "` Deaths: `" num-deaths "` K/D: `" kd "`"
-             "\nNanites Used: `" nanites-used "` Nanites Destroyed: `" nanites-destroyed "` Nanite Efficiency: `" nanite-efficiency "`")))
+             "\nNanites Used: `" vehicles-used "` Nanites Destroyed: `" vehicles-destroyed "` Nanite Efficiency: `" nanite-efficiency "`")))
+
+(defn get-max-kills
+    [char-info]
+    (let [infantry-kills (:kills char-info)
+          grouped        (group-by :loadout-id infantry-kills)
+          infantry-map   (api/get-loadouts)
+          mapped         (map (fn [[k v]] {:loadout-id k :name (get-in infantry-map [k :code-name]) :amount (count v)}) grouped)
+          filtered       (filter #(case (:loadout-id %)
+                                      "7" true
+                                      "14" true
+                                      "21" true
+                                      false) mapped)]
+        filtered))
 
 (defn get-vehicle-kill-stats
     [char-info]
