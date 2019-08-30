@@ -80,10 +80,10 @@
         (reverse (sort-by :amount filtered))))
 
 (defn get-weapon-name
-    [item_id]
-    (if (= "0" item_id)
+    [item-id]
+    (if (= "0" item-id)
         "RAM"
-        (or (get-in (api/get-item-info item_id) [:name :en]) "Unknown")))
+        (or (get-in (api/get-item-info item-id) [:name :en]) (str "Unknown(" item-id ")"))))
 
 (defn get-kills-by-weapon
     [char-info]
@@ -91,12 +91,15 @@
           vehicles-grouped   (group-by :attacker-weapon-id vehicles-destroyed)
           infantry-killed    (:kills char-info)
           infantry-grouped   (group-by :attacker-weapon-id infantry-killed)
-          item_ids           (conj (keys vehicles-grouped) (keys infantry-grouped))
-          mapped             (map #(hash-map :item_id %
-                                             :item_name (get-weapon-name %)
+          item-ids           (-> #{}
+                                 (into (keys vehicles-grouped))
+                                 (into (keys infantry-grouped)))
+          mapped             (map #(hash-map :item-id %
+                                             :item-name (get-weapon-name %)
                                              :vehicle-count (count (get vehicles-grouped % []))
                                              :infantry-count (count (get infantry-grouped % [])))
-                                  item_ids)]
+                                  item-ids)]
+
         (reverse (sort-by #(+ (:vehicle-count %) (:infantry-count %)) mapped))))
 
 (defn format-weapon-kills
@@ -104,7 +107,7 @@
     (let [infantry-kills (:infantry-count row)
           vehicle-kills (:vehicle-count row)
           weapon-name (:item-name row)]
-        (str weapon-name " - Infantry: `" infantry-kills "`, Vehicle: `" vehicle-kills "`")))
+        (str weapon-name " - `" infantry-kills "`/`" vehicle-kills "`")))
 
 (defn print-stats
     [payload char-exp]
@@ -124,7 +127,7 @@
           fields                    [{:name "XP (Top 10)" :value xp-summary}
                                      {:name "Vehicles Destroyed" :value vehicle-destroyed-summary}
                                      {:name "Vehicles Lost" :value vehicle-lost-summary}
-                                     {:name "Kills By Weapon" :value kills-by-weapon}]]
+                                     {:name "Kills - By Weapon (Infantry/Vehicle)" :value kills-by-weapon}]]
 
         (if (not (empty? most-exp-first))
             (do
