@@ -72,12 +72,39 @@
 
 (defn get-vehicle-lost-stats
     [char-info]
-    (let [vehicles-destroyed (:vehicle-deaths char-info)
-          grouped            (group-by :vehicle-id vehicles-destroyed)
+    (let [vehicles-lost      (:vehicle-deaths char-info)
+          grouped            (group-by :vehicle-id vehicles-lost)
           vehicle-map        (api/get-vehicles)
           mapped             (map (fn [[k v]] {:vehicle-id k :name (get-in vehicle-map [k :name :en]) :amount (count v)}) grouped)
           filtered           (filter #(get-in vehicle-map [(:vehicle-id %) :cost]) mapped)]
         (reverse (sort-by :amount filtered))))
+
+(defn get-weapon-name
+    [item_id]
+    (if (= "0" item_id)
+        "RAM"
+        (or (get-in (api/get-item-info item_id) [:name :en]) "Unknown")))
+
+(defn get-kills-by-weapon
+    [char-info]
+    (let [vehicles-destroyed (:vehicle-kills char-info)
+          vehicles-grouped   (group-by :attacker-weapon-id vehicles-destroyed)
+          infantry-killed    (:kills char-info)
+          infantry-grouped   (group-by :attacker-weapon-id infantry-killed)
+          item_ids           (conj (keys vehicles-grouped) (keys infantry-grouped))
+          mapped             (map #(hash-map :item_id %
+                                             :item_name (get-weapon-name %)
+                                             :vehicle-count (count (get vehicles-grouped % []))
+                                             :infantry-count (count (get infantry-grouped % [])))
+                                  item_ids)]
+        (reverse (sort-by #(+ (:vehicle-count %) (:infantry-count %)) mapped))))
+
+(defn format-weapon-kills
+    [row]
+    (let [infantry-kills (:infantry-count row)
+          vehicle-kills (:vehicle-count row)
+          weapon-name (:item-name row)]
+        (str weapon-name " - Infantry: `" infantry-kills "`, Vehicle: `" vehicle-kills "`")))
 
 (defn print-stats
     [payload char-exp]
@@ -93,9 +120,11 @@
           xp-summary                (clojure.string/join "\n" (map format-exp-total exp-descriptions-added))
           vehicle-destroyed-summary (clojure.string/join "\n" (map #(str "x" (:amount %1) " - " (:name %1)) (get-vehicle-kill-stats char-info)))
           vehicle-lost-summary      (clojure.string/join "\n" (map #(str "x" (:amount %1) " - " (:name %1)) (get-vehicle-lost-stats char-info)))
+          kills-by-weapon           (clojure.string/join "\n" (map format-weapon-kills (get-kills-by-weapon char-info)))
           fields                    [{:name "XP (Top 10)" :value xp-summary}
                                      {:name "Vehicles Destroyed" :value vehicle-destroyed-summary}
-                                     {:name "Vehicles Lost" :value vehicle-lost-summary}]]
+                                     {:name "Vehicles Lost" :value vehicle-lost-summary}
+                                     {:name "Kills By Weapon" :value kills-by-weapon}]]
 
         (if (not (empty? most-exp-first))
             (do

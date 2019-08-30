@@ -119,6 +119,15 @@
 
         [client1, client2]))
 
+(defn check-for-untracked-chars
+    []
+    (let [char-names-lower (map #(clojure.string/trim (clojure.string/lower-case %)) (config/SUBSCRIBE_CHARACTERS))
+          char-names-set   (into #{} char-names-lower)
+          api-chars        (into #{} (map #(get-in % [:name :first-lower]) (vals (api/get-characters))))
+          diff             (clojure.set/difference char-names-set api-chars)]
+        (if (not (empty? diff))
+            (helper/log (str "Untracked chars: " (clojure.string/join "," diff))))))
+
 (defn -main
     [& args]
 
@@ -126,7 +135,10 @@
           clients     (connect)
           startup-msg "SACA Stats has started!"]
 
-        (discord/send-message startup-msg startup-msg [])
+        (check-for-untracked-chars)
+
+        (if (not (config/IS_DEV))
+            (discord/send-message startup-msg startup-msg []))
 
         (while is-running
             (Thread/sleep 1000))))

@@ -67,3 +67,11 @@
                        body         (helper/read-json (:body result))
                        coll         (:loadout-list body)]
                      (zipmap (map :loadout-id coll) coll)))))
+
+(def get-item-info
+    (memoize (fn [item_id]
+                 (let [url          (str "http://census.daybreakgames.com/s:" (config/SERVICE_ID) "/get/ps2:v2/item?item_id=" item_id "&c:lang=en")
+                       result       (client/get url)
+                       body         (helper/read-json (:body result))
+                       coll         (:item-list body)]
+                     (first coll)))))
