@@ -133,7 +133,7 @@
 
     (let [is-running  true
           clients     (connect)
-          startup-msg "SACA Stats has started!"]
+          startup-msg "SACA Stats has started! (v5)"]
 
         (check-for-untracked-chars)
 
