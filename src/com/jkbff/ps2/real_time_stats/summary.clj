@@ -12,7 +12,7 @@
 
 (defn get-char-stats-sorted
     [experience-events]
-
+    ; TODO use group-by instead?
     (let [processed (reduce process-char-info {} experience-events)
           coll      (vals processed)]
 
@@ -109,6 +109,13 @@
           weapon-name (:item-name row)]
         (str weapon-name " - `" infantry-kills "`/`" vehicle-kills "`")))
 
+(defn get-xp-stats
+    [char-info]
+    (let [most-exp-first            (take 10 (get-char-stats-sorted (:experience-events char-info)))
+          exp-list                  (api/get-experience-types)
+          exp-descriptions-added    (map #(assoc % :description (get-in exp-list [(:experience-id %) :description])) most-exp-first)]
+        exp-descriptions-added))
+
 (defn print-stats
     [payload char-exp]
 
@@ -116,20 +123,17 @@
           char-name                 (get-in (api/get-characters) [character-id :name :first])
           title                     (str char-name " Stats Summary (" character-id ")")
           char-info                 (get @char-exp character-id)
-          most-exp-first            (take 10 (get-char-stats-sorted (:experience-events char-info)))
-          exp-list                  (api/get-experience-types)
-          exp-descriptions-added    (map #(assoc % :description (get-in exp-list [(:experience-id %) :description])) most-exp-first)
+          ;xp-summary                (clojure.string/join "\n" (map format-exp-total (get-xp-stats char-info)))
           summary                   (get-overall-summary char-info)
-          xp-summary                (clojure.string/join "\n" (map format-exp-total exp-descriptions-added))
           vehicle-destroyed-summary (clojure.string/join "\n" (map #(str "x" (:amount %1) " - " (:name %1)) (get-vehicle-kill-stats char-info)))
           vehicle-lost-summary      (clojure.string/join "\n" (map #(str "x" (:amount %1) " - " (:name %1)) (get-vehicle-lost-stats char-info)))
           kills-by-weapon           (clojure.string/join "\n" (map format-weapon-kills (get-kills-by-weapon char-info)))
-          fields                    [{:name "XP (Top 10)" :value xp-summary}
+          fields                    [;{:name "XP (Top 10)" :value xp-summary}
                                      {:name "Vehicles Destroyed" :value vehicle-destroyed-summary}
                                      {:name "Vehicles Lost" :value vehicle-lost-summary}
                                      {:name "Kills - By Weapon (Infantry/Vehicle)" :value kills-by-weapon}]]
 
-        (if (not (empty? most-exp-first))
+        (if (not (empty? (:experience-events char-info)))
             (do
                 (helper/log (str "sending summary for " char-name " (" character-id ")"))
                 (discord/send-message title summary fields))
