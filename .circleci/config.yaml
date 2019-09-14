@@ -1,0 +1,10 @@
+version: 2.1
+
+jobs:
+  build:
+    working_directory: ~/app
+    steps:
+      - checkout
+      - run: |
+          docker build ~/app -t docker.jkbff.com/saca-stats:latest
+          docker push docker.jkbff.com/saca-stats:latest
