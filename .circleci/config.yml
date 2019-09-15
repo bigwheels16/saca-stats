@@ -15,4 +15,4 @@ jobs:
     docker:
       - image: bitnami/kubectl:1.15.3
     steps:
-      kubectl version
+      - kubectl version
