@@ -19,10 +19,10 @@ jobs:
     steps:
       - setup_remote_docker
       - run: |
-          mkdir ~/app/config
-          echo $KUBE_CONFIG | base64 -d > ~/app/config/config
-          cat ~/app/config/config
-          docker run -v ~/app/config:/.kube bitnami/kubectl:1.15.3 get pods --all-namespaces
+          wget -O /kubectl https://storage.googleapis.com/kubernetes-release/release/$K8S_VERSION/bin/linux/amd64/kubectl
+          chmod +x /kubectl
+          echo $KUBE_CONFIG | base64 -d > ~/.kube/config
+          kubectl get pods --all-namespaces
 
 workflows:
   version: 2
