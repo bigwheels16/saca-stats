@@ -18,7 +18,9 @@ jobs:
     steps:
       - setup_remote_docker
       - run: |
-          docker run bitnami/kubectl:1.15.3 version
+          mkdir .kube
+          echo $KUBE_CONFIG | base64 -d > .kube/config
+          docker run -v .kube:/config bitnami/kubectl:1.15.3 get pods --all-namespaces
 
 workflows:
   version: 2
