@@ -14,6 +14,7 @@ jobs:
   deploy:
     docker:
       - image: bitnami/kubectl:1.15.3
+        entrypoint: /bin/sh
     steps:
       - run: echo "hi"
 
@@ -23,3 +24,5 @@ workflows:
     jobs:
       - build
       - deploy
+          requires:
+            - build
