@@ -17,12 +17,11 @@ jobs:
       - image: circleci/buildpack-deps:stretch
     working_directory: ~/app
     steps:
-      - setup_remote_docker
       - run: |
-          wget -O /kubectl https://storage.googleapis.com/kubernetes-release/release/$K8S_VERSION/bin/linux/amd64/kubectl
-          chmod +x /kubectl
+          wget -O kubectl https://storage.googleapis.com/kubernetes-release/release/$K8S_VERSION/bin/linux/amd64/kubectl
+          chmod +x kubectl
           echo $KUBE_CONFIG | base64 -d > ~/.kube/config
-          kubectl get pods --all-namespaces
+          ./kubectl get pods --all-namespaces
 
 workflows:
   version: 2
