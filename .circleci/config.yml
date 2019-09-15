@@ -22,13 +22,13 @@ jobs:
           chmod +x kubectl
           mkdir ~/.kube
           echo $KUBE_CONFIG | base64 -d > ~/.kube/config
-          ./kubectl get pods --all-namespaces
+          ./kubectl rollout restart deployment/saca-stats-deployment
 
 workflows:
   version: 2
   build_and_deploy:
     jobs:
-      #- build
+      - build
       - deploy
-          #requires:
-          #  - build
+          requires:
+            - build
