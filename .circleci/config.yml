@@ -13,9 +13,8 @@ jobs:
           docker push docker.jkbff.com/saca-stats:latest
   deploy:
     docker:
-      - image: alpine
-    steps:
-      - run: echo "hi"
+      - image: bitnami/kubectl:1.15.3
+        command: version
 
 workflows:
   version: 2
