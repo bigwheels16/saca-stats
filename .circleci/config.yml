@@ -21,6 +21,7 @@ jobs:
       - run: |
           mkdir ~/app/config
           echo $KUBE_CONFIG | base64 -d > ~/app/config/config
+          cat ~/app/config/config
           docker run -v ~/app/config:/.kube bitnami/kubectl:1.15.3 get pods --all-namespaces
 
 workflows:
