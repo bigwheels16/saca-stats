@@ -11,16 +11,20 @@ jobs:
       - run: |
           docker build -t docker.jkbff.com/saca-stats:latest .
           docker push docker.jkbff.com/saca-stats:latest
+
   deploy:
     docker:
-      - image: bitnami/kubectl:1.15.3
-        command: version
+      - image: circleci/buildpack-deps:stretch
+    steps:
+      - setup_remote_docker
+      - run: |
+          docker run bitnami/kubectl:1.15.3 version
 
 workflows:
   version: 2
   build_and_deploy:
     jobs:
-      - build
+      #- build
       - deploy:
           requires:
             - build
