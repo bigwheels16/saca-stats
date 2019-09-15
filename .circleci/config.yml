@@ -15,7 +15,7 @@ jobs:
     docker:
       - image: bitnami/kubectl:1.15.3
     steps:
-      - run: kubectl version
+      - run: echo "hi"
 
 workflows:
   version: 2
