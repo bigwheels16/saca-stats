@@ -6,4 +6,4 @@ COPY project.clj project.clj
 RUN lein deps
 COPY ./ ./
 
-CMD ["./start.sh"]
+CMD ["lein run"]
