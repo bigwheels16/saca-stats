@@ -16,3 +16,10 @@ jobs:
       - image: bitnami/kubectl:1.15.3
     steps:
       - kubectl version
+
+workflows:
+  version: 2
+  build_and_deploy:
+    jobs:
+      - build
+      - deploy
