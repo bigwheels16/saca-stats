@@ -11,3 +11,8 @@ jobs:
       - run: |
           docker build -t docker.jkbff.com/saca-stats:latest .
           docker push docker.jkbff.com/saca-stats:latest
+  deploy:
+    docker:
+      - image: bitnami/kubectl:1.15.3
+    steps:
+      kubectl version
