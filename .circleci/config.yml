@@ -20,6 +20,7 @@ jobs:
       - run: |
           wget -O kubectl https://storage.googleapis.com/kubernetes-release/release/$K8S_VERSION/bin/linux/amd64/kubectl
           chmod +x kubectl
+          mkdir ~/.kube
           echo $KUBE_CONFIG | base64 -d > ~/.kube/config
           ./kubectl get pods --all-namespaces
 
