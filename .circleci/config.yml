@@ -15,12 +15,13 @@ jobs:
   deploy:
     docker:
       - image: circleci/buildpack-deps:stretch
+    working_directory: /app
     steps:
       - setup_remote_docker
       - run: |
-          mkdir /config
-          echo $KUBE_CONFIG | base64 -d > /config/config
-          docker run -v /config:/config bitnami/kubectl:1.15.3 get pods --all-namespaces
+          mkdir config
+          echo $KUBE_CONFIG | base64 -d > /app/config/config
+          docker run -v /app/config:/config bitnami/kubectl:1.15.3 get pods --all-namespaces
 
 workflows:
   version: 2
