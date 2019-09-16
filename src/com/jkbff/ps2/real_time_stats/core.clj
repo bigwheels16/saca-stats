@@ -4,7 +4,9 @@
               [com.jkbff.ps2.real_time_stats.config :as config]
               [com.jkbff.ps2.real_time_stats.api :as api]
               [com.jkbff.ps2.real_time_stats.summary :as summary]
-              [com.jkbff.ps2.real_time_stats.discord :as discord]))
+              [com.jkbff.ps2.real_time_stats.discord :as discord]
+              [clojure.spec.alpha :as s]
+              [clojure.spec.test.alpha :as stest]))
 
 (def char-exp (atom {}))
 
@@ -30,6 +32,9 @@
 (defn append-value
     [m ks v]
     (update-in m ks #(cons v %1)))
+(s/fdef append-value
+        :args (s/cat :m map? :ks seq? :v nil?)
+        :ret map?)
 
 (defn handle-death
     [payload]
@@ -130,6 +135,9 @@
 
 (defn -main
     [& args]
+
+    (if (config/IS_DEV)
+        (stest/instrument))
 
     (let [is-running  true
           clients     (connect)

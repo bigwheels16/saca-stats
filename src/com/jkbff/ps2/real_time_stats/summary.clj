@@ -1,11 +1,17 @@
 (ns com.jkbff.ps2.real_time_stats.summary
     (:require [com.jkbff.ps2.real_time_stats.api :as api]
               [com.jkbff.ps2.real_time_stats.helper :as helper]
-              [com.jkbff.ps2.real_time_stats.discord :as discord]))
+              [com.jkbff.ps2.real_time_stats.discord :as discord]
+              [clojure.spec.alpha :as s]))
+
+(s/def ::infantry-count int?)
+(s/def ::vehicle-count int?)
+(s/def ::item-name string?)
+(s/def ::kills seq?)
+(s/def ::vehicle-kills string?)
 
 (defn process-char-info
     [m experience-events]
-
     (let [{experience-id :experience-id amount :amount} experience-events]
         (update m experience-id (fn [{current-amount :amount current-count :count}]
                                     {:amount (+ (or current-amount 0) amount) :count (inc (or current-count 0)) :experience-id experience-id}))))
@@ -15,7 +21,6 @@
     ; TODO use group-by instead?
     (let [processed (reduce process-char-info {} experience-events)
           coll      (vals processed)]
-
         (reverse (sort-by :amount coll))))
 
 (defn format-exp-total
@@ -30,19 +35,22 @@
     [logon-time]
     (if logon-time
         (- (System/currentTimeMillis) logon-time)))
+(s/fdef get-total-time
+        :args (s/cat :login-time number?)
+        :ret number?)
 
 (defn get-overall-summary
     [char-info]
-    (let [total-time        (get-total-time (:logon char-info))
-          total-xp          (get-total-xp (:experience-events char-info))
-          xp-per-min        (if total-time (quot (* total-xp 60 1000) total-time) "Unknown")
-          num-kills         (count (:kills char-info))
-          num-deaths        (count (:deaths char-info))
-          kd                (float (/ num-kills (if (zero? num-deaths) 1 num-deaths)))
-          vehicle-map       (api/get-vehicles)
+    (let [total-time         (get-total-time (:logon char-info))
+          total-xp           (get-total-xp (:experience-events char-info))
+          xp-per-min         (if total-time (quot (* total-xp 60 1000) total-time) "Unknown")
+          num-kills          (count (:kills char-info))
+          num-deaths         (count (:deaths char-info))
+          kd                 (float (/ num-kills (if (zero? num-deaths) 1 num-deaths)))
+          vehicle-map        (api/get-vehicles)
           vehicles-used      (reduce + 0 (map #(get-in vehicle-map [(:vehicle-id %) :cost] 0) (:vehicle-deaths char-info)))
           vehicles-destroyed (reduce + 0 (map #(get-in vehicle-map [(:vehicle-id %) :cost] 0) (:vehicle-kills char-info)))
-          nanite-efficiency (float (/ vehicles-destroyed (if (zero? vehicles-used) 1 vehicles-used)))]
+          nanite-efficiency  (float (/ vehicles-destroyed (if (zero? vehicles-used) 1 vehicles-used)))]
         (str "Time: " (if total-time (helper/get-time-str (quot total-time 1000)) "Unknown")
              "\nTotal XP: `" total-xp "` XP / min: `" xp-per-min "`"
              "\nKills: `" num-kills "` Deaths: `" num-deaths "` K/D: `" kd "`"
@@ -72,11 +80,11 @@
 
 (defn get-vehicle-lost-stats
     [char-info]
-    (let [vehicles-lost      (:vehicle-deaths char-info)
-          grouped            (group-by :vehicle-id vehicles-lost)
-          vehicle-map        (api/get-vehicles)
-          mapped             (map (fn [[k v]] {:vehicle-id k :name (get-in vehicle-map [k :name :en]) :amount (count v)}) grouped)
-          filtered           (filter #(get-in vehicle-map [(:vehicle-id %) :cost]) mapped)]
+    (let [vehicles-lost (:vehicle-deaths char-info)
+          grouped       (group-by :vehicle-id vehicles-lost)
+          vehicle-map   (api/get-vehicles)
+          mapped        (map (fn [[k v]] {:vehicle-id k :name (get-in vehicle-map [k :name :en]) :amount (count v)}) grouped)
+          filtered      (filter #(get-in vehicle-map [(:vehicle-id %) :cost]) mapped)]
         (reverse (sort-by :amount filtered))))
 
 (defn get-weapon-name
@@ -101,20 +109,29 @@
                                   item-ids)]
 
         (reverse (sort-by #(+ (:vehicle-count %) (:infantry-count %)) mapped))))
+(s/fdef get-kills-by-weapon
+        :args (s/cat :row (s/keys :req [::vehicle-kills ::kills]))
+        :ret string?)
 
 (defn format-weapon-kills
     [row]
     (let [infantry-kills (:infantry-count row)
-          vehicle-kills (:vehicle-count row)
-          weapon-name (:item-name row)]
+          vehicle-kills  (:vehicle-count row)
+          weapon-name    (:item-name row)]
         (str weapon-name " - `" infantry-kills "`/`" vehicle-kills "`")))
+(s/fdef format-weapon-kills
+        :args (s/cat :row (s/keys :req [::infantry-count ::vehicle-count ::item-name]))
+        :ret string?)
 
 (defn get-xp-stats
     [char-info]
-    (let [most-exp-first            (take 10 (get-char-stats-sorted (:experience-events char-info)))
-          exp-list                  (api/get-experience-types)
-          exp-descriptions-added    (map #(assoc % :description (get-in exp-list [(:experience-id %) :description])) most-exp-first)]
+    (let [most-exp-first         (take 10 (get-char-stats-sorted (:experience-events char-info)))
+          exp-list               (api/get-experience-types)
+          exp-descriptions-added (map #(assoc % :description (get-in exp-list [(:experience-id %) :description])) most-exp-first)]
         exp-descriptions-added))
+(s/fdef get-xp-stats
+        :args (s/cat ::char-info map?)
+        :ret seq?)
 
 (defn print-stats
     [payload char-exp]
