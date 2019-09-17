@@ -18,7 +18,6 @@
           amount        (Integer/parseInt (:amount payload))
           current-val   (or (get-in char-exp-map [character-id :experience-events]) (list))
           new-val       (cons {:experience-id experience-id :amount amount} current-val)]
-
         (assoc-in char-exp-map [character-id :experience-events] new-val)))
 
 (defn handle-login
@@ -33,7 +32,7 @@
     [m ks v]
     (update-in m ks #(cons v %1)))
 (s/fdef append-value
-        :args (s/cat :m map? :ks seq? :v nil?)
+        :args (s/cat :m map? :ks sequential? :v any?)
         :ret map?)
 
 (defn handle-death
@@ -141,7 +140,7 @@
 
     (let [is-running  true
           clients     (connect)
-          startup-msg "SACA Stats has started! (v5)"]
+          startup-msg "SACA Stats has started! (v6)"]
 
         (check-for-untracked-chars)
 
