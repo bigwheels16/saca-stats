@@ -4,17 +4,10 @@
               [com.jkbff.ps2.real_time_stats.discord :as discord]
               [clojure.spec.alpha :as s]))
 
-(defn process-char-info
-    [m experience-events]
-    (let [{experience-id :experience-id amount :amount} experience-events]
-        (update m experience-id (fn [{current-amount :amount current-count :count}]
-                                    {:amount (+ (or current-amount 0) amount) :count (inc (or current-count 0)) :experience-id experience-id}))))
-
 (defn get-char-stats-sorted
     [experience-events]
-    ; TODO use group-by instead?
-    (let [processed (reduce process-char-info {} experience-events)
-          coll      (vals processed)]
+    (let [grouped (group-by :experience-id experience-events)
+          coll    (map (fn [[k v]] {:experience-id k :count (count v) :amount (apply + (map #(Integer/parseInt (:amount %)) v))}) grouped)]
         (reverse (sort-by :amount coll))))
 
 (defn format-exp-total
