@@ -308,6 +308,12 @@
                        m      (zipmap (map :vehicle-id coll) coll)]
                      (helper/deep-merge m vehicle-costs)))))
 
+(def get-vehicles-by-name
+    (memoize (fn []
+                 (let [vehicles (vals (get-vehicles))
+                       m        (zipmap (map #(get-in % [:name :en]) vehicles) vehicles)]
+                     m))))
+
 (def get-continents
     (memoize (fn []
                  (let [url    (str "http://census.daybreakgames.com/s:" (config/SERVICE_ID) "/get/ps2:v2/zone?c:limit=500&c:lang=en")

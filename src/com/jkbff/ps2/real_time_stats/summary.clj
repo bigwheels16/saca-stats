@@ -26,22 +26,44 @@
         :args (s/cat :login-time (s/nilable number?))
         :ret number?)
 
+(defn get-gunner-kills
+    [char-info]
+    (let [xp                (:experience-events char-info)
+          mapped-to-vehicle (map #(assoc % :name (get-in api/gunner-experience [(:experience-id %) :killed])) xp)
+          filtered          (filter :name mapped-to-vehicle)
+          xp-grouped        (group-by :name filtered)
+          mapped            (map (fn [[k v]] {:name k :amount (count v)}) xp-grouped)]
+        (reverse (sort-by :amount mapped))))
+
+(defn get-gunner-vehicles-destroyed
+    [char-info]
+    (let [gunner-kills         (get-gunner-kills char-info)
+          vehicles-by-name     (api/get-vehicles-by-name)
+          gunner-vehicle-kills (map #(let [name       (:name %)
+                                           vehicle-id (:vehicle-id (get vehicles-by-name name))]
+                                         (assoc % :vehicle-id vehicle-id)) gunner-kills)]
+        (filter :vehicle-id gunner-vehicle-kills)))
+
 (defn get-overall-summary
     [char-info]
-    (let [total-time         (get-total-time (:logon char-info))
-          total-xp           (get-total-xp (:experience-events char-info))
-          xp-per-min         (if total-time (quot (* total-xp 60 1000) total-time) "Unknown")
-          num-kills          (count (:kills char-info))
-          num-deaths         (count (:deaths char-info))
-          kd                 (float (/ num-kills (if (zero? num-deaths) 1 num-deaths)))
-          vehicle-map        (api/get-vehicles)
-          vehicles-used      (reduce + 0 (map #(get-in vehicle-map [(:vehicle-id %) :cost] 0) (:vehicle-deaths char-info)))
-          vehicles-destroyed (reduce + 0 (map #(get-in vehicle-map [(:vehicle-id %) :cost] 0) (:vehicle-kills char-info)))
-          nanite-efficiency  (float (/ vehicles-destroyed (if (zero? vehicles-used) 1 vehicles-used)))]
+    (let [total-time               (get-total-time (:logon char-info))
+          total-xp                 (get-total-xp (:experience-events char-info))
+          xp-per-min               (if total-time (quot (* total-xp 60 1000) total-time) "Unknown")
+          num-kills                (count (:kills char-info))
+          num-deaths               (count (:deaths char-info))
+          kd                       (float (/ num-kills (if (zero? num-deaths) 1 num-deaths)))
+          vehicle-map              (api/get-vehicles)
+          nanites-used             (reduce + 0 (map #(get-in vehicle-map [(:vehicle-id %) :cost] 0) (:vehicle-deaths char-info)))
+          nanites-destroyed        (reduce + 0 (map #(get-in vehicle-map [(:vehicle-id %) :cost] 0) (:vehicle-kills char-info)))
+          gunner-nanites-destroyed (reduce + 0 (map #(* (:amount %) (get-in vehicle-map [(:vehicle-id %) :cost] 0)) (get-gunner-vehicles-destroyed char-info)))
+          nanite-efficiency        (float (/ nanites-destroyed (if (zero? nanites-used) 1 nanites-used)))
+          total-nanite-efficiency  (float (/ (+ nanites-destroyed gunner-nanites-destroyed) (if (zero? nanites-used) 1 nanites-used)))]
         (str "Time: " (if total-time (helper/get-time-str (quot total-time 1000)) "Unknown")
              "\nTotal XP: `" total-xp "` XP / min: `" xp-per-min "`"
              "\nKills: `" num-kills "` Deaths: `" num-deaths "` K/D: `" kd "`"
-             "\nNanites Used: `" vehicles-used "` Nanites Destroyed: `" vehicles-destroyed "` Nanite Efficiency: `" nanite-efficiency "`")))
+             "\nNanites Used: `" nanites-used "` Nanites Destroyed: `" nanites-destroyed "` Nanite Efficiency: `" nanite-efficiency "`"
+             (if (> gunner-nanites-destroyed 0)
+                 (str "\nGunner Nanites Destroyed: `" gunner-nanites-destroyed "` Total Nanite Efficiency: `" total-nanite-efficiency "`")))))
 
 (defn get-max-kills
     [char-info]
@@ -110,14 +132,6 @@
           exp-list               (api/get-experience-types)
           exp-descriptions-added (map #(assoc % :description (get-in exp-list [(:experience-id %) :description])) most-exp-first)]
         exp-descriptions-added))
-
-(defn get-gunner-kills
-    [char-info]
-    (let [xp         (:experience-events char-info)
-          filtered   (filter #(contains? api/gunner-experience (:experience-id %)) xp)
-          xp-grouped (group-by :experience-id filtered)
-          mapped     (map (fn [[k v]] {:name (get-in api/gunner-experience [k :killed]) :amount (count v)}) xp-grouped)]
-        (reverse (sort-by :amount mapped))))
 
 (defn print-stats
     [payload char-exp]
