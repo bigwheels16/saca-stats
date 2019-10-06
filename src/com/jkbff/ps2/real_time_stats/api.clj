@@ -309,9 +309,9 @@
                      (helper/deep-merge m vehicle-costs)))))
 
 (def get-vehicles-by-name
-    (memoize (fn []
+    (memoize (fn [lang]
                  (let [vehicles (vals (get-vehicles))
-                       m        (zipmap (map #(get-in % [:name :en]) vehicles) vehicles)]
+                       m        (zipmap (map #(get-in % [:name lang]) vehicles) vehicles)]
                      m))))
 
 (def get-continents

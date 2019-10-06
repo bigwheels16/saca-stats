@@ -8,6 +8,7 @@
               [clojure.spec.alpha :as s]
               [clojure.spec.test.alpha :as stest]))
 
+(def LANG :en)
 (def char-exp (atom {}))
 
 (defn update-experience
@@ -18,6 +19,10 @@
           amount        (Integer/parseInt (:amount payload))
           current-val   (or (get-in char-exp-map [character-id :experience-events]) (list))
           new-val       (cons {:experience-id experience-id :amount amount} current-val)]
+
+        (if (config/IS_DEV)
+            (prn payload))
+
         (assoc-in char-exp-map [character-id :experience-events] new-val)))
 
 (defn handle-login
@@ -59,8 +64,8 @@
     [payload]
     (let [continent-id   (str (:zone-id payload))
           world-id       (str (:world-id payload))
-          continent-name (get-in (api/get-continents) [continent-id :name :en])
-          world-name     (get-in (api/get-worlds) [world-id :name :en])
+          continent-name (get-in (api/get-continents) [continent-id :name LANG])
+          world-name     (get-in (api/get-worlds) [world-id :name LANG])
           message        (str continent-name " has locked on " world-name "!")]
 
         (if continent-name
@@ -70,8 +75,8 @@
     [payload]
     (let [continent-id   (str (:zone-id payload))
           world-id       (str (:world-id payload))
-          continent-name (get-in (api/get-continents) [continent-id :name :en])
-          world-name     (get-in (api/get-worlds) [world-id :name :en])
+          continent-name (get-in (api/get-continents) [continent-id :name LANG])
+          world-name     (get-in (api/get-worlds) [world-id :name LANG])
           message        (str continent-name " has unlocked on " world-name "!")]
 
         (if continent-name
@@ -140,7 +145,7 @@
 
     (let [is-running  true
           clients     (connect)
-          startup-msg "SACA Stats has started! (v6)"]
+          startup-msg "SACA Stats has started! (v7)"]
 
         (check-for-untracked-chars)
 
