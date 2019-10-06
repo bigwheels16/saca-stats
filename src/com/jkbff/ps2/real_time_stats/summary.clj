@@ -133,12 +133,23 @@
           exp-descriptions-added (map #(assoc % :description (get-in exp-list [(:experience-id %) :description])) most-exp-first)]
         exp-descriptions-added))
 
+(defn get-title
+    [char-details]
+    (let [character-id (:character-id char-details)
+          char-name    (get-in char-details [:name :first])
+          faction-id   (:faction-id char-details)
+          faction      (get-in (api/get-factions) [faction-id :code-tag])
+          world-id     (:world-id char-details)
+          world        (get-in (api/get-worlds) [world-id :name])]
+        (str char-name " (" faction " " world ") - " character-id)))
+
 (defn print-stats
     [payload char-exp]
 
     (let [character-id              (:character-id payload)
-          char-name                 (get-in (api/get-characters) [character-id :name :first])
-          title                     (str char-name " Stats Summary (" character-id ")")
+          char-details              (get (api/get-characters) character-id)
+          char-name                 (get-in char-details [:name :first])
+          title                     (get-title char-details)
           char-info                 (get @char-exp character-id)
           ;xp-summary                (clojure.string/join "\n" (map format-exp-total (get-xp-stats char-info)))
           summary                   (get-overall-summary char-info)

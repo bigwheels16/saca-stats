@@ -295,7 +295,7 @@
     (memoize (fn []
                  (let [char-names-lower (map #(clojure.string/trim (clojure.string/lower-case %)) (config/SUBSCRIBE_CHARACTERS))
                        char-names-str   (clojure.string/join "," char-names-lower)
-                       url              (str "http://census.daybreakgames.com/s:" (config/SERVICE_ID) "/get/ps2/character?name.first_lower=" char-names-str "&c:limit=" (count char-names-lower))
+                       url              (str "http://census.daybreakgames.com/s:" (config/SERVICE_ID) "/get/ps2/character?name.first_lower=" char-names-str "&c:resolve=world&c:limit=" (count char-names-lower))
                        result           (client/get url)
                        body             (helper/read-json (:body result))
                        coll             (:character-list body)]
@@ -331,6 +331,14 @@
                        body   (helper/read-json (:body result))
                        coll   (map #(assoc % :name (get-in % [:name LANG])) (:world-list body))]
                      (zipmap (map :world-id coll) coll)))))
+
+(def get-factions
+    (memoize (fn []
+                 (let [url    (str "http://census.daybreakgames.com/s:" (config/SERVICE_ID) "/get/ps2:v2/faction?c:limit=100&c:lang=en")
+                       result (client/get url)
+                       body   (helper/read-json (:body result))
+                       coll   (map #(assoc % :name (get-in % [:name LANG])) (:faction-list body))]
+                     (zipmap (map :faction-id coll) coll)))))
 
 (def get-loadouts
     (memoize (fn []
