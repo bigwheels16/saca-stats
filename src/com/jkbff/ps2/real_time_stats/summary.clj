@@ -1,7 +1,6 @@
 (ns com.jkbff.ps2.real_time_stats.summary
     (:require [com.jkbff.ps2.real_time_stats.api :as api]
               [com.jkbff.ps2.real_time_stats.helper :as helper]
-              [com.jkbff.ps2.real_time_stats.core :as core]
               [com.jkbff.ps2.real_time_stats.discord :as discord]
               [clojure.spec.alpha :as s]))
 
@@ -39,7 +38,7 @@
 (defn get-gunner-vehicles-destroyed
     [char-info]
     (let [gunner-kills         (get-gunner-kills char-info)
-          vehicles-by-name     (api/get-vehicles-by-name core/LANG)
+          vehicles-by-name     (api/get-vehicles-by-name)
           gunner-vehicle-kills (map #(let [name       (:name %)
                                            vehicle-id (:vehicle-id (get vehicles-by-name name))]
                                          (assoc % :vehicle-id vehicle-id)) gunner-kills)]
@@ -84,7 +83,7 @@
     (let [vehicles-destroyed (filter #(not= "0" (:attacker-vehicle-id %)) (:vehicle-kills char-info)) ; only count vehicles destroyed from a vehicle
           grouped            (group-by :vehicle-id vehicles-destroyed)
           vehicle-map        (api/get-vehicles)
-          mapped             (map (fn [[k v]] {:vehicle-id k :name (get-in vehicle-map [k :name core/LANG]) :amount (count v)}) grouped)
+          mapped             (map (fn [[k v]] {:vehicle-id k :name (get-in vehicle-map [k :name]) :amount (count v)}) grouped)
           filtered           (filter #(get-in vehicle-map [(:vehicle-id %) :cost]) mapped)]
         (reverse (sort-by :amount filtered))))
 
@@ -93,7 +92,7 @@
     (let [vehicles-lost (:vehicle-deaths char-info)
           grouped       (group-by :vehicle-id vehicles-lost)
           vehicle-map   (api/get-vehicles)
-          mapped        (map (fn [[k v]] {:vehicle-id k :name (get-in vehicle-map [k :name core/LANG]) :amount (count v)}) grouped)
+          mapped        (map (fn [[k v]] {:vehicle-id k :name (get-in vehicle-map [k :name]) :amount (count v)}) grouped)
           filtered      (filter #(get-in vehicle-map [(:vehicle-id %) :cost]) mapped)]
         (reverse (sort-by :amount filtered))))
 
@@ -101,7 +100,7 @@
     [item-id]
     (if (= "0" item-id)
         "RAM"
-        (or (get-in (api/get-item-info item-id) [:name core/LANG]) (str "Unknown(" item-id ")"))))
+        (or (:name (api/get-item-info item-id)) (str "Unknown(" item-id ")"))))
 
 (defn get-kills-by-weapon
     [char-info]

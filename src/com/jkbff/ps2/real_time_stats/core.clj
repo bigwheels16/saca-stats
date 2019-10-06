@@ -8,7 +8,6 @@
               [clojure.spec.alpha :as s]
               [clojure.spec.test.alpha :as stest]))
 
-(def LANG :en)
 (def char-exp (atom {}))
 
 (defn update-experience
@@ -64,8 +63,8 @@
     [payload]
     (let [continent-id   (str (:zone-id payload))
           world-id       (str (:world-id payload))
-          continent-name (get-in (api/get-continents) [continent-id :name LANG])
-          world-name     (get-in (api/get-worlds) [world-id :name LANG])
+          continent-name (get-in (api/get-continents) [continent-id :name])
+          world-name     (get-in (api/get-worlds) [world-id :name])
           message        (str continent-name " has locked on " world-name "!")]
 
         (if continent-name
@@ -75,8 +74,8 @@
     [payload]
     (let [continent-id   (str (:zone-id payload))
           world-id       (str (:world-id payload))
-          continent-name (get-in (api/get-continents) [continent-id :name LANG])
-          world-name     (get-in (api/get-worlds) [world-id :name LANG])
+          continent-name (get-in (api/get-continents) [continent-id :name])
+          world-name     (get-in (api/get-worlds) [world-id :name])
           message        (str continent-name " has unlocked on " world-name "!")]
 
         (if continent-name
@@ -128,14 +127,13 @@
 
         [client1, client2]))
 
-(defn check-for-untracked-chars
+(defn get-untracked-chars
     []
     (let [char-names-lower (map #(clojure.string/trim (clojure.string/lower-case %)) (config/SUBSCRIBE_CHARACTERS))
           char-names-set   (into #{} char-names-lower)
           api-chars        (into #{} (map #(get-in % [:name :first-lower]) (vals (api/get-characters))))
           diff             (clojure.set/difference char-names-set api-chars)]
-        (if (not (empty? diff))
-            (helper/log (str "Untracked chars: " (clojure.string/join "," diff))))))
+        diff))
 
 (defn -main
     [& args]
@@ -143,14 +141,17 @@
     (if (config/IS_DEV)
         (stest/instrument))
 
-    (let [is-running  true
-          clients     (connect)
-          startup-msg "SACA Stats has started! (v7)"]
-
-        (check-for-untracked-chars)
+    (let [is-running      true
+          clients         (connect)
+          startup-msg     "SACA Stats has started! (v7)"
+          untracked-chars (get-untracked-chars)]
 
         (if (not (config/IS_DEV))
-            (discord/send-message startup-msg startup-msg []))
+            (if (not (empty? untracked-chars))
+                (let [error-msg (str "Untracked chars: " (clojure.string/join "," untracked-chars))]
+                    (helper/log error-msg)
+                    (discord/send-message startup-msg error-msg []))
+                (discord/send-message startup-msg "No errors." [])))
 
         (while is-running
             (Thread/sleep 1000))))

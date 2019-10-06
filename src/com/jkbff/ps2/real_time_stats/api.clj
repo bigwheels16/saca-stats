@@ -3,6 +3,8 @@
               [com.jkbff.ps2.real_time_stats.helper :as helper]
               [com.jkbff.ps2.real_time_stats.config :as config]))
 
+(def LANG :en)
+
 (def vehicle-costs
     {"1"  {:cost 50}                                        ; flash
      "2"  {:cost 200}                                       ; sunderer
@@ -304,14 +306,14 @@
                  (let [url    (str "http://census.daybreakgames.com/s:" (config/SERVICE_ID) "/get/ps2:v2/vehicle?c:limit=500&c:lang=en")
                        result (client/get url)
                        body   (helper/read-json (:body result))
-                       coll   (map #(select-keys % [:vehicle-id :name]) (:vehicle-list body))
+                       coll   (map #(hash-map :vehicle-id (:vehicle-id %) :name (get-in % [:name LANG])) (:vehicle-list body))
                        m      (zipmap (map :vehicle-id coll) coll)]
                      (helper/deep-merge m vehicle-costs)))))
 
 (def get-vehicles-by-name
-    (memoize (fn [lang]
+    (memoize (fn []
                  (let [vehicles (vals (get-vehicles))
-                       m        (zipmap (map #(get-in % [:name lang]) vehicles) vehicles)]
+                       m        (zipmap (map :name vehicles) vehicles)]
                      m))))
 
 (def get-continents
@@ -319,7 +321,7 @@
                  (let [url    (str "http://census.daybreakgames.com/s:" (config/SERVICE_ID) "/get/ps2:v2/zone?c:limit=500&c:lang=en")
                        result (client/get url)
                        body   (helper/read-json (:body result))
-                       coll   (:zone-list body)]
+                       coll   (map #(assoc % :name (get-in % [:name LANG])) (:zone-list body))]
                      (zipmap (map :zone-id coll) coll)))))
 
 (def get-worlds
@@ -327,7 +329,7 @@
                  (let [url    (str "http://census.daybreakgames.com/s:" (config/SERVICE_ID) "/get/ps2:v2/world?c:limit=100&c:lang=en")
                        result (client/get url)
                        body   (helper/read-json (:body result))
-                       coll   (:world-list body)]
+                       coll   (map #(assoc % :name (get-in % [:name LANG])) (:world-list body))]
                      (zipmap (map :world-id coll) coll)))))
 
 (def get-loadouts
@@ -343,5 +345,5 @@
                  (let [url    (str "http://census.daybreakgames.com/s:" (config/SERVICE_ID) "/get/ps2:v2/item?item_id=" item_id "&c:lang=en")
                        result (client/get url)
                        body   (helper/read-json (:body result))
-                       coll   (:item-list body)]
+                       coll   (map #(assoc % :name (get-in % [:name LANG])) (:item-list body))]
                      (first coll)))))
