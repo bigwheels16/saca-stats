@@ -9,6 +9,7 @@
               [clojure.spec.test.alpha :as stest]))
 
 (def char-exp (atom {}))
+(def is-running (atom true))
 
 (defn update-experience
     [char-exp-map payload]
@@ -103,6 +104,7 @@
 
 (defn handle-close
     [status-code reason]
+    (set! is-running false)
     (helper/log "Connection closed:" status-code reason))
 
 (defn connect
@@ -141,8 +143,7 @@
     (if (config/IS_DEV)
         (stest/instrument))
 
-    (let [is-running      true
-          clients         (connect)
+    (let [clients         (connect)
           startup-msg     "SACA Stats has started! (v7)"
           untracked-chars (get-untracked-chars)]
 
@@ -153,5 +154,8 @@
                     (discord/send-message startup-msg error-msg []))
                 (discord/send-message startup-msg "No errors." [])))
 
-        (while is-running
-            (Thread/sleep 1000))))
+        (while @is-running
+            (Thread/sleep 1000))
+
+        ; return non-zero exit code to indicate error
+        1))
