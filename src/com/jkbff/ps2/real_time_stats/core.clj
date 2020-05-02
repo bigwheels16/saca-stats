@@ -113,9 +113,10 @@
                               :on-receive handle-message
                               :on-close handle-close)
 
-          client2 (ws/connect (str "wss://push.planetside2.com/streaming?environment=ps2&service-id=s:" (config/SERVICE_ID))
-                              :on-receive handle-message
-                              :on-close handle-close)]
+          ;client2 (ws/connect (str "wss://push.planetside2.com/streaming?environment=ps2&service-id=s:" (config/SERVICE_ID))
+          ;                    :on-receive handle-message
+          ;                    :on-close handle-close)
+          ]
 
         (ws/send-msg client1 (helper/write-json {:service    "event"
                                                  :action     "subscribe"
@@ -127,7 +128,7 @@
         ;                                         :worlds     ["1"]
         ;                                         :eventNames ["ContinentLock" "ContinentUnlock" "MetagameEvent"]}))
 
-        [client1, client2]))
+        [client1]))
 
 (defn get-untracked-chars
     []
