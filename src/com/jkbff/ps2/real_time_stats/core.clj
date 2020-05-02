@@ -122,10 +122,10 @@
                                                  :characters (keys (api/get-characters))
                                                  :eventNames ["GainExperience" "PlayerLogin" "PlayerLogout" "Death" "VehicleDestroy"]}))
 
-        (ws/send-msg client2 (helper/write-json {:service    "event"
-                                                 :action     "subscribe"
-                                                 :worlds     ["1"]
-                                                 :eventNames ["ContinentLock" "ContinentUnlock" "MetagameEvent"]}))
+        ;(ws/send-msg client2 (helper/write-json {:service    "event"
+        ;                                         :action     "subscribe"
+        ;                                         :worlds     ["1"]
+        ;                                         :eventNames ["ContinentLock" "ContinentUnlock" "MetagameEvent"]}))
 
         [client1, client2]))
 
