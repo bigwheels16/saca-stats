@@ -82,6 +82,16 @@
         (if continent-name
             (discord/send-message message message (list)))))
 
+(defn handle-facility-capture
+    [payload]
+    (let [character-id (:character-id payload)]
+        (swap! char-exp #(append-value %1 [character-id :facility-capture] payload))))
+
+(defn handle-facility-defend
+    [payload]
+    (let [character-id (:character-id payload)]
+        (swap! char-exp #(append-value %1 [character-id :facility-defend] payload))))
+
 (defn handle-message
     [msg]
     (try
@@ -99,6 +109,8 @@
                 "VehicleDestroy" (handle-vehicle payload)
                 "ContinentLock" (handle-continent-lock payload)
                 "ContinentUnlock" (handle-continent-unlock payload)
+                "PlayerFacilityCapture" (handle-facility-capture payload)
+                "PlayerFacilityDefend" (handle-facility-defend payload)
                 nil))
         (catch Exception e (.printStackTrace e))))
 
@@ -121,7 +133,7 @@
         (ws/send-msg client1 (helper/write-json {:service    "event"
                                                  :action     "subscribe"
                                                  :characters (keys (api/get-characters))
-                                                 :eventNames ["GainExperience" "PlayerLogin" "PlayerLogout" "Death" "VehicleDestroy"]}))
+                                                 :eventNames ["GainExperience" "PlayerLogin" "PlayerLogout" "Death" "VehicleDestroy" "PlayerFacilityCapture" "PlayerFacilityDefend"]}))
 
         ;(ws/send-msg client2 (helper/write-json {:service    "event"
         ;                                         :action     "subscribe"

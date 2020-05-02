@@ -53,6 +53,8 @@
           num-deaths               (count (:deaths char-info))
           kd                       (float (/ num-kills (if (zero? num-deaths) 1 num-deaths)))
           vehicle-map              (api/get-vehicles)
+          num-facility-captured    (count (:facility-capture char-info))
+          num-facility-defended    (count (:facility-defenses char-info))
           nanites-used             (reduce + 0 (map #(get-in vehicle-map [(:vehicle-id %) :cost] 0) (:vehicle-deaths char-info)))
           nanites-destroyed        (reduce + 0 (map #(get-in vehicle-map [(:vehicle-id %) :cost] 0) (:vehicle-kills char-info)))
           gunner-nanites-destroyed (reduce + 0 (map #(* (:amount %) (get-in vehicle-map [(:vehicle-id %) :cost] 0)) (get-gunner-vehicles-destroyed char-info)))
@@ -61,6 +63,7 @@
         (str "Time: " (if total-time (helper/get-time-str (quot total-time 1000)) "Unknown")
              "\nTotal XP: `" total-xp "` XP / min: `" xp-per-min "`"
              "\nKills: `" num-kills "` Deaths: `" num-deaths "` K/D: `" kd "`"
+             "\nFacilities Defended: `" num-facility-defended "` Facilities Captured: `" num-facility-captured "`"
              "\nNanites Used: `" nanites-used "` Nanites Destroyed: `" nanites-destroyed "` Nanite Efficiency: `" nanite-efficiency "`"
              (if (> gunner-nanites-destroyed 0)
                  (str "\nGunner Nanites Destroyed: `" gunner-nanites-destroyed "` Total Nanite Efficiency: `" total-nanite-efficiency "`")))))
