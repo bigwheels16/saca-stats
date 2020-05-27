@@ -189,4 +189,4 @@
             (ws/close c))
 
         ; return non-zero exit code to indicate error
-        1))
+        (System/exit 1)))
