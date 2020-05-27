@@ -8,7 +8,7 @@
               [clojure.spec.alpha :as s]
               [clojure.spec.test.alpha :as stest]))
 
-(def last-heartbeat (atom 0))
+(def last-heartbeat (atom (System/currentTimeMillis)))
 (def char-exp (atom {}))
 (def is-running (atom true))
 
