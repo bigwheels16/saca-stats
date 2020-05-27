@@ -99,6 +99,10 @@
         (let [obj     (helper/read-json msg)
               payload (:payload obj)]
 
+            (if (= "heartbeat" (:type obj))
+                (do (helper/log obj)
+                    (reset! last-heartbeat (System/currentTimeMillis))))
+
             ;(if (not= "heartbeat" (:type obj))
             ;    (helper/log obj))
 
