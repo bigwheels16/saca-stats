@@ -45,3 +45,10 @@
                 (if (zero? amount)
                     (recur (rest units-left) units-arr time-left)
                     (recur (rest units-left) (conj units-arr (str amount " " (:unit next-unit))) remainder))))))
+
+; taken from: https://stackoverflow.com/questions/21404130/periodically-calling-a-function-in-clojure
+(defn callback-interval [callback ms]
+	(future (while true
+				(do
+					(Thread/sleep ms)
+					(callback)))))

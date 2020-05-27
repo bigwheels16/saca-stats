@@ -22,6 +22,7 @@
      "15" {:cost 200}                                       ; ant
      })
 
+; missing ANT Kill by Sunderer
 (def gunner-experience
     {"146" {:killed "Player"
             :by     "Sunderer"}

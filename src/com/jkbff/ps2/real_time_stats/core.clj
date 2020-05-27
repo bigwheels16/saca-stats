@@ -8,6 +8,7 @@
               [clojure.spec.alpha :as s]
               [clojure.spec.test.alpha :as stest]))
 
+(def last-heartbeat (atom 0))
 (def char-exp (atom {}))
 (def is-running (atom true))
 
@@ -116,7 +117,7 @@
 
 (defn handle-close
     [status-code reason]
-    (set! is-running false)
+    (reset! is-running false)
     (helper/log "Connection closed:" status-code reason))
 
 (defn connect
@@ -150,6 +151,13 @@
           diff             (clojure.set/difference char-names-set api-chars)]
         diff))
 
+(defn is-connected?
+    [max-ms]
+    (let [time-since-heartbeat (- (System/currentTimeMillis) @last-heartbeat)]
+        (if (> time-since-heartbeat max-ms)
+            (do (helper/log (str "No heartbeat for " time-since-heartbeat "ms. Shutting down..."))
+                (reset! is-running false)))))
+
 (defn -main
     [& args]
 
@@ -158,7 +166,8 @@
 
     (let [clients         (connect)
           startup-msg     "SACA Stats has started! (v7)"
-          untracked-chars (get-untracked-chars)]
+          untracked-chars (get-untracked-chars)
+          is-connected-future (helper/callback-interval (partial is-connected? 60000) 30000)]
 
         (if (not (config/IS_DEV))
             (if (not (empty? untracked-chars))
@@ -169,6 +178,11 @@
 
         (while @is-running
             (Thread/sleep 1000))
+
+        ; cleanup
+        (future-cancel is-connected-future)
+        (doseq [c clients]
+            (ws/close c))
 
         ; return non-zero exit code to indicate error
         1))
