@@ -4,6 +4,10 @@
               [com.jkbff.ps2.real_time_stats.discord :as discord]
               [clojure.spec.alpha :as s]))
 
+(defn format-float
+    [input]
+    (format "%.2f" (float input)))
+
 (defn get-char-stats-sorted
     [experience-events]
     (let [grouped (group-by :experience-id experience-events)
@@ -51,15 +55,15 @@
           xp-per-min               (if total-time (quot (* total-xp 60 1000) total-time) "Unknown")
           num-kills                (count (:kills char-info))
           num-deaths               (count (:deaths char-info))
-          kd                       (float (/ num-kills (if (zero? num-deaths) 1 num-deaths)))
+          kd                       (format-float (/ num-kills (if (zero? num-deaths) 1 num-deaths)))
           vehicle-map              (api/get-vehicles)
           num-facility-captured    (count (:facility-capture char-info))
           num-facility-defended    (count (:facility-defenses char-info))
           nanites-used             (reduce + 0 (map #(get-in vehicle-map [(:vehicle-id %) :cost] 0) (:vehicle-deaths char-info)))
           nanites-destroyed        (reduce + 0 (map #(get-in vehicle-map [(:vehicle-id %) :cost] 0) (:vehicle-kills char-info)))
           gunner-nanites-destroyed (reduce + 0 (map #(* (:amount %) (get-in vehicle-map [(:vehicle-id %) :cost] 0)) (get-gunner-vehicles-destroyed char-info)))
-          nanite-efficiency        (float (/ nanites-destroyed (if (zero? nanites-used) 1 nanites-used)))
-          total-nanite-efficiency  (float (/ (+ nanites-destroyed gunner-nanites-destroyed) (if (zero? nanites-used) 1 nanites-used)))]
+          nanite-efficiency        (format-float (/ nanites-destroyed (if (zero? nanites-used) 1 nanites-used)))
+          total-nanite-efficiency  (format-float (/ (+ nanites-destroyed gunner-nanites-destroyed) (if (zero? nanites-used) 1 nanites-used)))]
         (str "Time: " (if total-time (helper/get-time-str (quot total-time 1000)) "Unknown")
              "\nTotal XP: `" total-xp "` XP / min: `" xp-per-min "`"
              "\nKills: `" num-kills "` Deaths: `" num-deaths "` K/D: `" kd "`"
