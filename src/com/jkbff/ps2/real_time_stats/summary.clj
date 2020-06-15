@@ -58,7 +58,7 @@
           kd                       (format-float (/ num-kills (if (zero? num-deaths) 1 num-deaths)))
           vehicle-map              (api/get-vehicles)
           num-facility-captured    (count (:facility-capture char-info))
-          num-facility-defended    (count (:facility-defenses char-info))
+          num-facility-defended    (count (:facility-defend char-info))
           nanites-used             (reduce + 0 (map #(get-in vehicle-map [(:vehicle-id %) :cost] 0) (:vehicle-deaths char-info)))
           nanites-destroyed        (reduce + 0 (map #(get-in vehicle-map [(:vehicle-id %) :cost] 0) (:vehicle-kills char-info)))
           gunner-nanites-destroyed (reduce + 0 (map #(* (:amount %) (get-in vehicle-map [(:vehicle-id %) :cost] 0)) (get-gunner-vehicles-destroyed char-info)))
