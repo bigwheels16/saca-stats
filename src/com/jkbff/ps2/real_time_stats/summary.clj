@@ -2,7 +2,8 @@
     (:require [com.jkbff.ps2.real_time_stats.api :as api]
               [com.jkbff.ps2.real_time_stats.helper :as helper]
               [com.jkbff.ps2.real_time_stats.discord :as discord]
-              [clojure.spec.alpha :as s]))
+              [clojure.spec.alpha :as s]
+              [com.jkbff.ps2.real_time_stats.config :as config]))
 
 (defn format-float
     [input]
@@ -151,10 +152,10 @@
         (str char-name " (" faction " " world ") - " character-id)))
 
 (defn print-stats
-    [payload char-exp]
+    [payload char-exp char-map]
 
     (let [character-id              (:character-id payload)
-          char-details              (get (api/get-characters) character-id)
+          char-details              (get char-map character-id)
           char-name                 (get-in char-details [:name :first])
           title                     (get-title char-details)
           char-info                 (get @char-exp character-id)

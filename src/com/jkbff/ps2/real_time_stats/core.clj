@@ -27,9 +27,9 @@
         (assoc-in char-exp-map [character-id :experience-events] new-val)))
 
 (defn handle-login
-    [payload]
+    [payload char-map]
     (let [character-id (:character-id payload)
-          char-name    (get-in (api/get-characters) [character-id :name :first])
+          char-name    (get-in char-map [character-id :name :first])
           t            (System/currentTimeMillis)]
         (swap! char-exp #(assoc %1 character-id {:logon t}))
         (helper/log (str "tracking character " char-name " (" character-id ")"))))
@@ -94,7 +94,7 @@
         (swap! char-exp #(append-value %1 [character-id :facility-defend] payload))))
 
 (defn handle-message
-    [msg]
+    [char-map msg]
     (try
         (let [obj     (helper/read-json msg)
               payload (:payload obj)]
@@ -108,8 +108,8 @@
 
             (case (:event-name payload)
                 "GainExperience" (swap! char-exp update-experience payload)
-                "PlayerLogin" (handle-login payload)
-                "PlayerLogout" (summary/print-stats payload char-exp)
+                "PlayerLogin" (handle-login payload char-map)
+                "PlayerLogout" (summary/print-stats payload char-exp char-map)
                 "Death" (handle-death payload)
                 "VehicleDestroy" (handle-vehicle payload)
                 "ContinentLock" (handle-continent-lock payload)
@@ -125,9 +125,9 @@
     (helper/log "Connection closed:" status-code reason))
 
 (defn connect
-    []
+    [char-map]
     (let [client1 (ws/connect (str "wss://push.planetside2.com/streaming?environment=ps2&service-id=s:" (config/SERVICE_ID))
-                              :on-receive handle-message
+                              :on-receive (partial handle-message char-map)
                               :on-close handle-close)
 
           ;client2 (ws/connect (str "wss://push.planetside2.com/streaming?environment=ps2&service-id=s:" (config/SERVICE_ID))
@@ -137,7 +137,7 @@
 
         (ws/send-msg client1 (helper/write-json {:service    "event"
                                                  :action     "subscribe"
-                                                 :characters (keys (api/get-characters))
+                                                 :characters (keys char-map)
                                                  :eventNames ["GainExperience" "PlayerLogin" "PlayerLogout" "Death" "VehicleDestroy" "PlayerFacilityCapture" "PlayerFacilityDefend"]}))
 
         ;(ws/send-msg client2 (helper/write-json {:service    "event"
@@ -148,10 +148,10 @@
         [client1]))
 
 (defn get-untracked-chars
-    []
+    [char-map]
     (let [char-names-lower (map #(clojure.string/trim (clojure.string/lower-case %)) (config/SUBSCRIBE_CHARACTERS))
           char-names-set   (into #{} char-names-lower)
-          api-chars        (into #{} (map #(get-in % [:name :first-lower]) (vals (api/get-characters))))
+          api-chars        (into #{} (map #(get-in % [:name :first-lower]) (vals char-map)))
           diff             (clojure.set/difference char-names-set api-chars)]
         diff))
 
@@ -162,15 +162,21 @@
             (do (helper/log (str "No heartbeat for " time-since-heartbeat "ms. Shutting down..."))
                 (reset! is-running false)))))
 
+(defn get-outfit-characters
+    [outfit-ids]
+    (apply concat (map #(:members (api/get-outfit-by-id %)) outfit-ids)))
+
 (defn -main
     [& args]
 
     (if (config/IS_DEV)
         (stest/instrument))
 
-    (let [clients         (connect)
-          startup-msg     "SACA Stats has started! (v7)"
-          untracked-chars (get-untracked-chars)
+    (let [characters          (concat (api/get-characters (config/SUBSCRIBE_CHARACTERS)) (get-outfit-characters (config/SUBSCRIBE_OUTFITS)))
+          char-map            (zipmap (map :character-id characters) characters)
+          clients             (connect char-map)
+          startup-msg         (str "SACA Stats has started! (v8). Tracking " (count characters) " characters.")
+          untracked-chars     (get-untracked-chars char-map)
           is-connected-future (helper/callback-interval (partial is-connected? 60000) 30000)]
 
         (if (not (config/IS_DEV))

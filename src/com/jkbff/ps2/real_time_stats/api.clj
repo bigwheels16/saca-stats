@@ -293,14 +293,13 @@
                         (zipmap (map :experience-id coll) coll)))))
 
 (def get-characters
-    (memoize (fn []
-                 (let [char-names-lower (map #(clojure.string/trim (clojure.string/lower-case %)) (config/SUBSCRIBE_CHARACTERS))
+    (memoize (fn [char-names]
+                 (let [char-names-lower (map #(clojure.string/trim (clojure.string/lower-case %)) char-names)
                        char-names-str   (clojure.string/join "," char-names-lower)
                        url              (str "http://census.daybreakgames.com/s:" (config/SERVICE_ID) "/get/ps2/character?name.first_lower=" char-names-str "&c:resolve=world&c:limit=" (count char-names-lower))
                        result           (client/get url)
-                       body             (helper/read-json (:body result))
-                       coll             (:character-list body)]
-                     (zipmap (map :character-id coll) coll)))))
+                       body             (helper/read-json (:body result))]
+                     (:character-list body)))))
 
 (def get-vehicles
     (memoize (fn []
@@ -356,3 +355,10 @@
                        body   (helper/read-json (:body result))
                        coll   (map #(assoc % :name (get-in % [:name LANG])) (:item-list body))]
                      (first coll)))))
+
+(defn get-outfit-by-id
+    [outfit-id]
+    (let [url    (str "http://census.daybreakgames.com/s:" (config/SERVICE_ID) "/get/ps2:v2/outfit/?outfit_id=" outfit-id "&c:resolve=member_character")
+          result (client/get url)
+          body   (helper/read-json (:body result))]
+        (first (:outfit-list body))))

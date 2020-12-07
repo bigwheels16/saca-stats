@@ -19,5 +19,6 @@
 
 (defn SERVICE_ID [] (get-env-string "SERVICE_ID"))
 (defn SUBSCRIBE_CHARACTERS [] (str/split (get-env-string "SUBSCRIBE_CHARACTERS") #","))
+(defn SUBSCRIBE_OUTFITS [] (str/split (get-env-string "SUBSCRIBE_OUTFITS") #","))
 (defn DISCORD_WEBHOOK_URL [] (get-env-string "DISCORD_WEBHOOK_URL"))
 (defn IS_DEV [] (get-env-bool "IS_DEV"))
