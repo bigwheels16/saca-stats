@@ -42,23 +42,25 @@
         :ret map?)
 
 (defn handle-death
-    [payload]
+    [payload char-map]
     (let [character-id          (:character-id payload)
           attacker-character-id (:attacker-character-id payload)]
 
-        (swap! char-exp #(append-value %1 [character-id :deaths] payload))
+        (if (contains? char-map character-id)
+            (swap! char-exp #(append-value %1 [character-id :deaths] payload)))
 
-        (if (not= character-id attacker-character-id)
+        (if (and (contains? char-map attacker-character-id) (not= character-id attacker-character-id))
             (swap! char-exp #(append-value %1 [attacker-character-id :kills] payload)))))
 
 (defn handle-vehicle
-    [payload]
+    [payload char-map]
     (let [character-id          (:character-id payload)
           attacker-character-id (:attacker-character-id payload)]
 
-        (swap! char-exp #(append-value %1 [character-id :vehicle-deaths] payload))
+        (if (contains? char-map character-id)
+            (swap! char-exp #(append-value %1 [character-id :vehicle-deaths] payload)))
 
-        (if (not= character-id attacker-character-id)
+        (if (and (contains? char-map attacker-character-id) (not= character-id attacker-character-id))
             (swap! char-exp #(append-value %1 [attacker-character-id :vehicle-kills] payload)))))
 
 (defn handle-continent-lock
