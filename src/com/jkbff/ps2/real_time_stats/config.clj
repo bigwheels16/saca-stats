@@ -3,7 +3,7 @@
 
 (defn get-env-string
 	[name]
-	(clojure.string/trim (System/getenv name)))
+	(clojure.string/trim (or (System/getenv name) "")))
 
 (defn get-env-int
 	[name]
