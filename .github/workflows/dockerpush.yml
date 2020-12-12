@@ -72,24 +72,24 @@ jobs:
           docker tag image $IMAGE_ID:$VERSION
           docker push $IMAGE_ID:$VERSION
 
-  deploy:
-    needs: push
-
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push'
-
-    steps:
-      - name: rollout deployment
-        uses: steebchen/kubectl@master
-        env:
-          KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG }}
-          KUBECTL_VERSION: "1.17"
-        with:
-          args: '"rollout restart deployment/saca-stats-deployment"'
-      - name: verify deployment
-        uses: steebchen/kubectl@master
-        env:
-          KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG }}
-          KUBECTL_VERSION: "1.17"
-        with:
-          args: '"rollout status deployment/saca-stats-deployment"'
+#  deploy:
+#    needs: push
+#
+#    runs-on: ubuntu-latest
+#    if: github.event_name == 'push'
+#
+#    steps:
+#      - name: rollout deployment
+#        uses: steebchen/kubectl@master
+#        env:
+#          KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG }}
+#          KUBECTL_VERSION: "1.17"
+#        with:
+#          args: '"rollout restart deployment/saca-stats-deployment"'
+#      - name: verify deployment
+#        uses: steebchen/kubectl@master
+#        env:
+#          KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG }}
+#          KUBECTL_VERSION: "1.17"
+#        with:
+#          args: '"rollout status deployment/saca-stats-deployment"'
