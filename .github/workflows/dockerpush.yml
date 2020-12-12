@@ -15,7 +15,7 @@ on:
 
 env:
   IMAGE_NAME: saca-stats
-  DOCKER_REPOSITORY: docker.pkg.github.com
+  DOCKER_REPOSITORY: ghcr.io
 
 jobs:
   # Run tests.
@@ -51,11 +51,11 @@ jobs:
         run: docker build . --file Dockerfile --tag image
 
       - name: Log into registry
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login $DOCKER_REPOSITORY -u ${{ github.actor }} --password-stdin
+        run: echo "${{ secrets.CR_PAT }}" | docker login $DOCKER_REPOSITORY -u ${{ github.actor }} --password-stdin
 
       - name: Push image
         run: |
-          IMAGE_ID=$DOCKER_REPOSITORY/${{ github.repository }}/$IMAGE_NAME
+          IMAGE_ID=$DOCKER_REPOSITORY/${{ github.actor }}/$IMAGE_NAME
 
           # Strip git ref prefix from version
           VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
