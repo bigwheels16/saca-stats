@@ -147,7 +147,7 @@
           char-name    (get-in char-details [:name :first])
           faction-id   (:faction-id char-details)
           faction      (get-in (api/get-factions) [faction-id :code-tag])
-          world-id     (:world-id char-details)
+          world-id     (or (:world-id char-details) (get-in char-details [:world :world-id]))
           world        (get-in (api/get-worlds) [world-id :name])]
         (str char-name " (" faction " " world ") - " character-id)))
 

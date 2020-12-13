@@ -358,7 +358,7 @@
 
 (defn get-outfit-by-id
     [outfit-id]
-    (let [url    (str "http://census.daybreakgames.com/s:" (config/SERVICE_ID) "/get/ps2:v2/outfit/?outfit_id=" outfit-id "&c:resolve=member_character")
+    (let [url    (str "http://census.daybreakgames.com/s:" (config/SERVICE_ID) "/get/ps2:v2/outfit/?outfit_id=" outfit-id "&c:resolve=member_character&c:join=type:characters_world^on:members.character_id^to:character_id^inject_at:world")
           result (client/get url)
           body   (helper/read-json (:body result))]
         (first (:outfit-list body))))
