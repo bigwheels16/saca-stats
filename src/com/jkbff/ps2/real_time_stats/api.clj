@@ -8,7 +8,7 @@
 (def vehicle-costs
     {"1"  {:cost 50}                                        ; flash
      "2"  {:cost 200}                                       ; sunderer
-     "3"  {:cost 350}                                       ; lightning
+     "3"  {:cost 300}                                       ; lightning
      "4"  {:cost 450}                                       ; magrider
      "5"  {:cost 450}                                       ; vanguard
      "6"  {:cost 450}                                       ; prowler
@@ -17,7 +17,7 @@
      "9"  {:cost 350}                                       ; mosquito
      "10" {:cost 450}                                       ; liberator
      "11" {:cost 450}                                       ; galaxy
-     "12" {:cost 150}                                       ; harasser
+     "12" {:cost 300}                                       ; harasser
      "14" {:cost 250}                                       ; valkyrie
      "15" {:cost 200}                                       ; ant
      })
