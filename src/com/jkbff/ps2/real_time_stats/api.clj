@@ -4,6 +4,10 @@
               [com.jkbff.ps2.real_time_stats.config :as config]))
 
 (def LANG :en)
+(def BASE-URL (str "https://census.daybreakgames.com/s:" (config/SERVICE_ID) "/get/ps2:v2"))
+(defn create-url
+    [collection-type query-string]
+    (str BASE-URL "/" collection-type "?" query-string))
 
 (def vehicle-costs
     {"1"  {:cost 50}                                        ; flash
@@ -287,7 +291,7 @@
      })
 
 (def get-experience-types
-    (memoize (fn [] (let [result (client/get (str "https://census.daybreakgames.com/s:" (config/SERVICE_ID) "/get/ps2/experience?c:limit=2000"))
+    (memoize (fn [] (let [result (client/get (create-url "experience" "c:limit=2000"))
                           body   (helper/read-json (:body result))
                           coll   (:experience-list body)]
                         (zipmap (map :experience-id coll) coll)))))
@@ -296,14 +300,14 @@
     (memoize (fn [char-names]
                  (let [char-names-lower (map #(clojure.string/trim (clojure.string/lower-case %)) char-names)
                        char-names-str   (clojure.string/join "," char-names-lower)
-                       url              (str "http://census.daybreakgames.com/s:" (config/SERVICE_ID) "/get/ps2/character?name.first_lower=" char-names-str "&c:resolve=world&c:limit=" (count char-names-lower))
+                       url              (create-url "character" (str "name.first_lower=" char-names-str "&c:resolve=world&c:limit=" (count char-names-lower)))
                        result           (client/get url)
                        body             (helper/read-json (:body result))]
                      (:character-list body)))))
 
 (def get-vehicles
     (memoize (fn []
-                 (let [url    (str "http://census.daybreakgames.com/s:" (config/SERVICE_ID) "/get/ps2:v2/vehicle?c:limit=500&c:lang=en")
+                 (let [url    (create-url "vehicle" "c:limit=500&c:lang=en")
                        result (client/get url)
                        body   (helper/read-json (:body result))
                        coll   (map #(hash-map :vehicle-id (:vehicle-id %) :name (get-in % [:name LANG])) (:vehicle-list body))
@@ -318,7 +322,7 @@
 
 (def get-continents
     (memoize (fn []
-                 (let [url    (str "http://census.daybreakgames.com/s:" (config/SERVICE_ID) "/get/ps2:v2/zone?c:limit=500&c:lang=en")
+                 (let [url    (create-url "zone" "c:limit=500&c:lang=en")
                        result (client/get url)
                        body   (helper/read-json (:body result))
                        coll   (map #(assoc % :name (get-in % [:name LANG])) (:zone-list body))]
@@ -326,7 +330,7 @@
 
 (def get-worlds
     (memoize (fn []
-                 (let [url    (str "http://census.daybreakgames.com/s:" (config/SERVICE_ID) "/get/ps2:v2/world?c:limit=100&c:lang=en")
+                 (let [url    (create-url "world" "c:limit=100&c:lang=en")
                        result (client/get url)
                        body   (helper/read-json (:body result))
                        coll   (map #(assoc % :name (get-in % [:name LANG])) (:world-list body))]
@@ -334,7 +338,7 @@
 
 (def get-factions
     (memoize (fn []
-                 (let [url    (str "http://census.daybreakgames.com/s:" (config/SERVICE_ID) "/get/ps2:v2/faction?c:limit=100&c:lang=en")
+                 (let [url    (create-url "faction" "c:limit=100&c:lang=en")
                        result (client/get url)
                        body   (helper/read-json (:body result))
                        coll   (map #(assoc % :name (get-in % [:name LANG])) (:faction-list body))]
@@ -342,7 +346,7 @@
 
 (def get-loadouts
     (memoize (fn []
-                 (let [url    (str "http://census.daybreakgames.com/s:" (config/SERVICE_ID) "/get/ps2:v2/loadout?c:limit=500&c:lang=en")
+                 (let [url    (create-url "loadout" "c:limit=500&c:lang=en")
                        result (client/get url)
                        body   (helper/read-json (:body result))
                        coll   (:loadout-list body)]
@@ -350,7 +354,7 @@
 
 (def get-item-info
     (memoize (fn [item_id]
-                 (let [url    (str "http://census.daybreakgames.com/s:" (config/SERVICE_ID) "/get/ps2:v2/item?item_id=" item_id "&c:lang=en")
+                 (let [url    (create-url "item" (str "item_id=" item_id "&c:lang=en"))
                        result (client/get url)
                        body   (helper/read-json (:body result))
                        coll   (map #(assoc % :name (get-in % [:name LANG])) (:item-list body))]
@@ -358,7 +362,7 @@
 
 (defn get-outfit-by-id
     [outfit-id]
-    (let [url    (str "http://census.daybreakgames.com/s:" (config/SERVICE_ID) "/get/ps2:v2/outfit/?outfit_id=" outfit-id "&c:resolve=member_character&c:join=type:characters_world^on:members.character_id^to:character_id^inject_at:world")
+    (let [url    (create-url "outfit" (str "?outfit_id=" outfit-id "&c:resolve=member_character&c:join=type:characters_world^on:members.character_id^to:character_id^inject_at:world"))
           result (client/get url)
           body   (helper/read-json (:body result))]
         (first (:outfit-list body))))
