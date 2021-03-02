@@ -7,23 +7,41 @@
 (def BASE-URL (str "https://census.daybreakgames.com/s:" (config/SERVICE_ID) "/get/ps2:v2"))
 (defn create-url
     [collection-type query-string]
-    (str BASE-URL "/" collection-type "?" (clojure.string/join "&" (map (fn [[k v]] (str k "=" v)) (seq query-string)))))
+    (str BASE-URL "/" collection-type "?" (clojure.string/join "&" (map (fn [[k v]] (str k "=" v)) (partition 2 query-string)))))
+
+(def mbt-cost 450)
+(def esf-cost 350)
 
 (def vehicle-costs
     {"1"  {:cost 50}                                        ; flash
      "2"  {:cost 200}                                       ; sunderer
      "3"  {:cost 300}                                       ; lightning
-     "4"  {:cost 450}                                       ; magrider
-     "5"  {:cost 450}                                       ; vanguard
-     "6"  {:cost 450}                                       ; prowler
-     "7"  {:cost 350}                                       ; scythe
-     "8"  {:cost 350}                                       ; reaver
-     "9"  {:cost 350}                                       ; mosquito
+     "4"  {:cost mbt-cost}                                  ; magrider
+     "5"  {:cost mbt-cost}                                  ; vanguard
+     "6"  {:cost mbt-cost}                                  ; prowler
+     "7"  {:cost esf-cost}                                  ; scythe
+     "8"  {:cost esf-cost}                                  ; reaver
+     "9"  {:cost esf-cost}                                  ; mosquito
      "10" {:cost 450}                                       ; liberator
      "11" {:cost 450}                                       ; galaxy
      "12" {:cost 300}                                       ; harasser
      "14" {:cost 250}                                       ; valkyrie
      "15" {:cost 200}                                       ; ant
+     "2007" {:cost 0}                                       ; colossus
+     "2010" {:cost 0}                                       ; flash xs-1
+     "2019" {:cost 0}                                       ; bastion fleet carrier
+     "2033" {:cost 100}                                     ; javelin
+     "2122" {:cost esf-cost}                                ; mosquito interceptor
+     "2123" {:cost esf-cost}                                ; reaver interceptor
+     "2124" {:cost esf-cost}                                ; scythe interceptor
+     "2125" {:cost 100}                                     ; javelin
+     "2129" {:cost 100}                                     ; javelin
+     "2130" {:cost 0}                                       ; reclaimed sunderer
+     "2131" {:cost 0}                                       ; reclaimed galaxy
+     "2132" {:cost 0}                                       ; reclaimed valkyrie
+     "2133" {:cost mbt-cost}                                ; reclaimed magrider
+     "2134" {:cost mbt-cost}                                ; reclaimed vanguard
+     "2135" {:cost mbt-cost}                                ; reclaimed prowler
      })
 
 ; missing ANT Kill by Sunderer
@@ -291,7 +309,7 @@
      })
 
 (def get-experience-types
-    (memoize (fn [] (let [result (client/get (create-url "experience" {"c:limit" "2000"}))
+    (memoize (fn [] (let [result (client/get (create-url "experience" ["c:limit" "2000"]))
                           body   (helper/read-json (:body result))
                           coll   (:experience-list body)]
                         (zipmap (map :experience-id coll) coll)))))
@@ -300,17 +318,19 @@
     (memoize (fn [char-names]
                  (let [char-names-lower (map #(clojure.string/trim (clojure.string/lower-case %)) char-names)
                        char-names-str   (clojure.string/join "," char-names-lower)
-                       url              (create-url "character" {"name.first_lower" char-names-str
+                       url              (create-url "character" ["name.first_lower" char-names-str
                                                                  "c:resolve" "world"
-                                                                 "c:limit" (count char-names-lower)})
+                                                                 "c:resolve" "outfit"
+                                                                 "c:limit" (count char-names-lower)])
                        result           (client/get url)
                        body             (helper/read-json (:body result))]
+
                      (:character-list body)))))
 
 (def get-vehicles
     (memoize (fn []
-                 (let [url    (create-url "vehicle" {"c:limit" "500"
-                                                     "c:lang" "en"})
+                 (let [url    (create-url "vehicle" ["c:limit" "500"
+                                                     "c:lang" "en"])
                        result (client/get url)
                        body   (helper/read-json (:body result))
                        coll   (map #(hash-map :vehicle-id (:vehicle-id %) :name (get-in % [:name LANG])) (:vehicle-list body))
@@ -325,8 +345,8 @@
 
 (def get-continents
     (memoize (fn []
-                 (let [url    (create-url "zone" {"c:limit" "500"
-                                                  "c:lang" "en"})
+                 (let [url    (create-url "zone" ["c:limit" "500"
+                                                  "c:lang" "en"])
                        result (client/get url)
                        body   (helper/read-json (:body result))
                        coll   (map #(assoc % :name (get-in % [:name LANG])) (:zone-list body))]
@@ -334,8 +354,8 @@
 
 (def get-worlds
     (memoize (fn []
-                 (let [url    (create-url "world" {"c:limit" "100"
-                                                   "c:lang" "en"})
+                 (let [url    (create-url "world" ["c:limit" "100"
+                                                   "c:lang" "en"])
                        result (client/get url)
                        body   (helper/read-json (:body result))
                        coll   (map #(assoc % :name (get-in % [:name LANG])) (:world-list body))]
@@ -343,8 +363,8 @@
 
 (def get-factions
     (memoize (fn []
-                 (let [url    (create-url "faction" {"c:limit" "100"
-                                                     "c:lang" "en"})
+                 (let [url    (create-url "faction" ["c:limit" "100"
+                                                     "c:lang" "en"])
                        result (client/get url)
                        body   (helper/read-json (:body result))
                        coll   (map #(assoc % :name (get-in % [:name LANG])) (:faction-list body))]
@@ -352,8 +372,8 @@
 
 (def get-loadouts
     (memoize (fn []
-                 (let [url    (create-url "loadout" {"c:limit" "500"
-                                                     "c:lang" "en"})
+                 (let [url    (create-url "loadout" ["c:limit" "500"
+                                                     "c:lang" "en"])
                        result (client/get url)
                        body   (helper/read-json (:body result))
                        coll   (:loadout-list body)]
@@ -361,8 +381,8 @@
 
 (def get-item-info
     (memoize (fn [item_id]
-                 (let [url    (create-url "item" {"item_id" item_id
-                                                  "c:lang" "en"})
+                 (let [url    (create-url "item" ["item_id" item_id
+                                                  "c:lang" "en"])
                        result (client/get url)
                        body   (helper/read-json (:body result))
                        coll   (map #(assoc % :name (get-in % [:name LANG])) (:item-list body))]
@@ -370,9 +390,9 @@
 
 (defn get-outfit-by-id
     [outfit-id]
-    (let [url    (create-url "outfit" {"outfit_id" outfit-id
+    (let [url    (create-url "outfit" ["outfit_id" outfit-id
                                        "c:resolve" "member_character"
-                                       "c:join" "type:characters_world^on:members.character_id^to:character_id^inject_at:world"})
+                                       "c:join" "type:characters_world^on:members.character_id^to:character_id^inject_at:world"])
           result (client/get url)
           body   (helper/read-json (:body result))]
         (first (:outfit-list body))))
