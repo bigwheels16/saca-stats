@@ -1,4 +1,4 @@
-(ns com.jkbff.ps2.real_time_stats.helper
+(ns com.jkbff.ps2.real-time-stats.helper
 	(:require [clojure.data.json :as json]))
 
 (def time-units [{:unit "hr" :amount 3600} {:unit "min" :amount 60} {:unit "sec" :amount 1}])

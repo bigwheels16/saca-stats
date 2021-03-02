@@ -12,3 +12,6 @@ Update `run.bat` file with appropriate values and then run.
 
 ## How to get a Service ID
 You will need a service ID in order to use the streaming API. Getting a service ID is free and extremely easy and should only take a few seconds.  Fill out the form here: http://census.daybreakgames.com/#service-id
+
+## How to get an Outfit ID
+http://census.daybreakgames.com/get/ps2:v2/outfit?alias_lower=saca

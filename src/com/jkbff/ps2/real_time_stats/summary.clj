@@ -1,9 +1,8 @@
-(ns com.jkbff.ps2.real_time_stats.summary
-    (:require [com.jkbff.ps2.real_time_stats.api :as api]
-              [com.jkbff.ps2.real_time_stats.helper :as helper]
-              [com.jkbff.ps2.real_time_stats.discord :as discord]
-              [clojure.spec.alpha :as s]
-              [com.jkbff.ps2.real_time_stats.config :as config]))
+(ns com.jkbff.ps2.real-time-stats.summary
+    (:require [com.jkbff.ps2.real-time-stats.api :as api]
+              [com.jkbff.ps2.real-time-stats.helper :as helper]
+              [com.jkbff.ps2.real-time-stats.discord :as discord]
+              [clojure.spec.alpha :as s]))
 
 (defn format-float
     [input]

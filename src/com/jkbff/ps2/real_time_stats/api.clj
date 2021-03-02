@@ -1,7 +1,7 @@
-(ns com.jkbff.ps2.real_time_stats.api
+(ns com.jkbff.ps2.real-time-stats.api
     (:require [clj-http.client :as client]
-              [com.jkbff.ps2.real_time_stats.helper :as helper]
-              [com.jkbff.ps2.real_time_stats.config :as config]))
+              [com.jkbff.ps2.real-time-stats.helper :as helper]
+              [com.jkbff.ps2.real-time-stats.config :as config]))
 
 (def LANG :en)
 (def BASE-URL (str "https://census.daybreakgames.com/s:" (config/SERVICE_ID) "/get/ps2:v2"))

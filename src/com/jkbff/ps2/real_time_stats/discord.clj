@@ -1,6 +1,6 @@
-(ns com.jkbff.ps2.real_time_stats.discord
-    (:require [com.jkbff.ps2.real_time_stats.config :as config]
-              [com.jkbff.ps2.real_time_stats.helper :as helper]
+(ns com.jkbff.ps2.real-time-stats.discord
+    (:require [com.jkbff.ps2.real-time-stats.config :as config]
+              [com.jkbff.ps2.real-time-stats.helper :as helper]
               [clj-http.client :as client]))
 
 (def DISCORD_MAX_MESSAGES 15)

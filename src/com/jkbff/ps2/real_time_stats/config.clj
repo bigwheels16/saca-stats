@@ -1,4 +1,4 @@
-(ns com.jkbff.ps2.real_time_stats.config
+(ns com.jkbff.ps2.real-time-stats.config
 	(:require [clojure.string :as str]))
 
 (defn get-env-string
@@ -11,7 +11,7 @@
 
 (defn get-env-bool
 	[name]
-	(case (.toLowerCase (get-env-string "IS_DEV"))
+	(case (.toLowerCase (get-env-string name))
 		"0" false
 		"false" false
 		"1" true

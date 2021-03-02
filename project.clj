@@ -7,6 +7,6 @@
                  [stylefruits/gniazdo "1.1.1"]              ; web socket client
                  [org.clojure/data.json "0.2.6"]
                  [clj-http "3.7.0"]]
-  :main com.jkbff.ps2.real_time_stats.core
-  :init-ns com.jkbff.ps2.real_time_stats.core
-  :repl-options {:init-ns com.jkbff.ps2.real_time_stats.core})
+  :main com.jkbff.ps2.real-time-stats.core
+  :init-ns com.jkbff.ps2.real-time-stats.core
+  :repl-options {:init-ns com.jkbff.ps2.real-time-stats.core})

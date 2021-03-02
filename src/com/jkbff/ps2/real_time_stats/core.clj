@@ -1,10 +1,10 @@
-(ns com.jkbff.ps2.real_time_stats.core
+(ns com.jkbff.ps2.real-time-stats.core
     (:require [gniazdo.core :as ws]
-              [com.jkbff.ps2.real_time_stats.helper :as helper]
-              [com.jkbff.ps2.real_time_stats.config :as config]
-              [com.jkbff.ps2.real_time_stats.api :as api]
-              [com.jkbff.ps2.real_time_stats.summary :as summary]
-              [com.jkbff.ps2.real_time_stats.discord :as discord]
+              [com.jkbff.ps2.real-time-stats.helper :as helper]
+              [com.jkbff.ps2.real-time-stats.config :as config]
+              [com.jkbff.ps2.real-time-stats.api :as api]
+              [com.jkbff.ps2.real-time-stats.summary :as summary]
+              [com.jkbff.ps2.real-time-stats.discord :as discord]
               [clojure.spec.alpha :as s]
               [clojure.spec.test.alpha :as stest]))
 
