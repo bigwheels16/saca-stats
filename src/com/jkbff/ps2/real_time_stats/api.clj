@@ -42,6 +42,7 @@
      "2133" {:cost mbt-cost}                                ; reclaimed magrider
      "2134" {:cost mbt-cost}                                ; reclaimed vanguard
      "2135" {:cost mbt-cost}                                ; reclaimed prowler
+     "2136" {:cost esf-cost}                                ; dervish
      })
 
 ; missing ANT Kill by Sunderer
@@ -326,6 +327,16 @@
                        body             (helper/read-json (:body result))]
 
                      (:character-list body)))))
+
+(def get-character-by-id
+    (memoize (fn [character-id]
+                 (let [url              (create-url "character" ["character_id" character-id
+                                                                 "c:resolve" "world"
+                                                                 "c:resolve" "outfit"])
+                       result           (client/get url)
+                       body             (helper/read-json (:body result))]
+
+                     (first (:character-list body))))))
 
 (def get-vehicles
     (memoize (fn []
