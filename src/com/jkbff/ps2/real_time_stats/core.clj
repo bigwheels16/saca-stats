@@ -179,7 +179,7 @@
     (let [characters          (concat (api/get-characters (config/SUBSCRIBE_CHARACTERS)) (get-outfit-characters (config/SUBSCRIBE_OUTFITS)))
           char-map            (zipmap (map :character-id characters) characters)
           clients             (connect char-map (config/SUBSCRIBE_SERVERS))
-          startup-msg         (str "SACA Stats (v10) has started! Tracking " (count characters) " characters.")
+          startup-msg         (str "SACA Stats (v10) has started! Tracking " (count characters) " characters and " (count (config/SUBSCRIBE_SERVERS)) " servers.")
           untracked-chars     (get-untracked-chars char-map)
           is-connected-future (helper/callback-interval (partial is-connected? 60000) 30000)]
 
