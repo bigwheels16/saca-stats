@@ -28,6 +28,7 @@
 
 (defn handle-login
     [payload char-map]
+
     (let [character-id (:character-id payload)
           char-name    (get-in char-map [character-id :name :first])
           t            (System/currentTimeMillis)]
@@ -110,7 +111,7 @@
             (case (:event-name payload)
                 "GainExperience" (swap! char-exp update-experience payload)
                 "PlayerLogin" (handle-login payload char-map)
-                "PlayerLogout" (summary/print-stats payload char-exp char-map)
+                "PlayerLogout" (summary/print-stats (:character-id payload) char-exp char-map)
                 "Death" (handle-death payload char-map)
                 "VehicleDestroy" (handle-vehicle payload char-map)
                 "ContinentLock" (handle-continent-lock payload)
@@ -126,7 +127,7 @@
     (helper/log "Connection closed:" status-code reason))
 
 (defn connect
-    [char-map]
+    [char-map servers]
     (let [client1 (ws/connect (str "wss://push.planetside2.com/streaming?environment=ps2&service-id=s:" (config/SERVICE_ID))
                               :on-receive (partial handle-message char-map)
                               :on-close handle-close)
@@ -138,8 +139,10 @@
 
         (ws/send-msg client1 (helper/write-json {:service    "event"
                                                  :action     "subscribe"
-                                                 :characters (keys char-map)
-                                                 :eventNames ["GainExperience" "PlayerLogin" "PlayerLogout" "Death" "VehicleDestroy" "PlayerFacilityCapture" "PlayerFacilityDefend"]}))
+                                                 :characters (or (keys char-map) ["all"])
+                                                 :worlds     servers
+                                                 :eventNames ["GainExperience" "PlayerLogin" "PlayerLogout" "Death" "VehicleDestroy" "PlayerFacilityCapture" "PlayerFacilityDefend"]
+                                                 :logicalAndCharactersWithWorlds true}))
 
         ;(ws/send-msg client2 (helper/write-json {:service    "event"
         ;                                         :action     "subscribe"
@@ -175,7 +178,7 @@
 
     (let [characters          (concat (api/get-characters (config/SUBSCRIBE_CHARACTERS)) (get-outfit-characters (config/SUBSCRIBE_OUTFITS)))
           char-map            (zipmap (map :character-id characters) characters)
-          clients             (connect char-map)
+          clients             (connect char-map (config/SUBSCRIBE_SERVERS))
           startup-msg         (str "SACA Stats (v10) has started! Tracking " (count characters) " characters.")
           untracked-chars     (get-untracked-chars char-map)
           is-connected-future (helper/callback-interval (partial is-connected? 60000) 30000)]
