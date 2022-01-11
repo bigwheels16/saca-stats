@@ -17,8 +17,15 @@
 		"1" true
 		"true" true))
 
+(defn split-str
+	[s]
+	(if (.isEmpty s)
+		[]
+		(str/split s #",")))
+
 (defn SERVICE_ID [] (get-env-string "SERVICE_ID"))
-(defn SUBSCRIBE_CHARACTERS [] (str/split (get-env-string "SUBSCRIBE_CHARACTERS") #","))
-(defn SUBSCRIBE_OUTFITS [] (str/split (get-env-string "SUBSCRIBE_OUTFITS") #","))
+(defn SUBSCRIBE_CHARACTERS [] (split-str (get-env-string "SUBSCRIBE_CHARACTERS")))
+(defn SUBSCRIBE_OUTFITS [] (split-str (get-env-string "SUBSCRIBE_OUTFITS")))
+(defn SUBSCRIBE_SERVERS [] (split-str (get-env-string "SUBSCRIBE_SERVERS")))
 (defn DISCORD_WEBHOOK_URL [] (get-env-string "DISCORD_WEBHOOK_URL"))
 (defn IS_DEV [] (get-env-bool "IS_DEV"))

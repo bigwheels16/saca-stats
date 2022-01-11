@@ -317,16 +317,20 @@
 
 (def get-characters
     (memoize (fn [char-names]
-                 (let [char-names-lower (map #(clojure.string/trim (clojure.string/lower-case %)) char-names)
-                       char-names-str   (clojure.string/join "," char-names-lower)
-                       url              (create-url "character" ["name.first_lower" char-names-str
-                                                                 "c:resolve" "world"
-                                                                 "c:resolve" "outfit"
-                                                                 "c:limit" (count char-names-lower)])
-                       result           (client/get url)
-                       body             (helper/read-json (:body result))]
+                 (if (< 0 (count char-names))
+                     (let [char-names-lower (map #(clojure.string/trim (clojure.string/lower-case %)) char-names)
+                           char-names-str   (clojure.string/join "," char-names-lower)
+                           url              (create-url "character" ["name.first_lower" char-names-str
+                                                                     "c:resolve" "world"
+                                                                     "c:resolve" "outfit"
+                                                                     "c:limit" (count char-names-lower)])
+                           result           (client/get url)
+                           body             (helper/read-json (:body result))]
 
-                     (:character-list body)))))
+                         (:character-list body))
+
+                     ; else
+                    []))))
 
 (def get-character-by-id
     (memoize (fn [character-id]
