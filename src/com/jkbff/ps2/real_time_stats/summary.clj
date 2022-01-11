@@ -151,10 +151,9 @@
         (str char-name " (" faction " " world ") - " character-id)))
 
 (defn print-stats
-    [payload char-exp char-map]
+    [character-id char-exp char-map]
 
-    (let [character-id              (:character-id payload)
-          char-details              (get char-map character-id)
+    (let [char-details              (or (get char-map character-id) (api/get-character-by-id character-id))
           char-name                 (get-in char-details [:name :first])
           title                     (get-title char-details)
           char-info                 (get @char-exp character-id)
