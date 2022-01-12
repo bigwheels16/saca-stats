@@ -6,7 +6,11 @@
   :dependencies [[org.clojure/clojure "1.10.1"]
                  [stylefruits/gniazdo "1.1.1"]              ; web socket client
                  [org.clojure/data.json "0.2.6"]
-                 [clj-http "3.7.0"]]
+                 [com.github.seancorfield/next.jdbc "1.2.761"]
+                 [hikari-cp "2.13.0"] ; https://github.com/tomekw/hikari-cp
+                 [com.h2database/h2 "2.0.206"]
+                 [clj-http "3.7.0"]
+                 [ch.qos.logback/logback-classic "1.2.10"]]
   :main com.jkbff.ps2.real-time-stats.core
   :init-ns com.jkbff.ps2.real-time-stats.core
   :repl-options {:init-ns com.jkbff.ps2.real-time-stats.core})

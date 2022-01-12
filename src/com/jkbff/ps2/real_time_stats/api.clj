@@ -1,6 +1,6 @@
 (ns com.jkbff.ps2.real-time-stats.api
     (:require [clj-http.client :as client]
-              [com.jkbff.ps2.real-time-stats.helper :as helper]
+              [com.jkbff.helper :as helper]
               [com.jkbff.ps2.real-time-stats.config :as config]))
 
 (def LANG :en)

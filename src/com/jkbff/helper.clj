@@ -1,4 +1,4 @@
-(ns com.jkbff.ps2.real-time-stats.helper
+(ns com.jkbff.helper
 	(:require [clojure.data.json :as json]))
 
 (def time-units [{:unit "hr" :amount 3600} {:unit "min" :amount 60} {:unit "sec" :amount 1}])
@@ -18,11 +18,6 @@
 (defn read-json
 	[msg]
 	(json/read-str msg :key-fn #(keyword (identifiers-fn %))))
-
-(defn log
-	[& args]
-	(locking *out*
-		(apply prn args)))
 
 (defn deep-merge [a & maps]
     (if (map? a)
@@ -48,7 +43,21 @@
 
 ; taken from: https://stackoverflow.com/questions/21404130/periodically-calling-a-function-in-clojure
 (defn callback-interval [callback ms]
-	(future (while true
+	(future
+		(while true
+			(try
 				(do
 					(Thread/sleep ms)
-					(callback)))))
+					(callback))
+				(catch Exception e (.printStackTrace e))))))
+
+(defn int-to-string
+	[i]
+	(if (int? i)
+		(str i)
+		i))
+
+(defn parse-int-values
+	[m]
+	; parse traverse a map and parse string values into ints where possible
+	)
