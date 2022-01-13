@@ -81,19 +81,20 @@
                       "world_id"              (:world-id event)
                       "timestamp"             (:timestamp event)})
 
-        (sql/insert! db-conn
-                     "kill_event"
-                     {"is_headshot"           (:is-headshot event)
-                      "attacker_loadout_id"   (:attacker-loadout-id event)
-                      "attacker_fire_mode_id" (:attacker-fire-mode-id event)
-                      "attacker_weapon_id"    (:attacker-weapon-id event)
-                      "attacker_vehicle_id"   (:attacker-vehicle-id event)
-                      "attacker_character_id" (:attacker-character-id event)
-                      "character_loadout_id"  (:character-loadout-id event)
-                      "character_id"          (:character-id event)
-                      "zone_id"               (:zone-id event)
-                      "world_id"              (:world-id event)
-                      "timestamp"             (:timestamp event)})))
+        (if (not= (:attacker-character-id event) (:character-id event))
+            (sql/insert! db-conn
+                         "kill_event"
+                         {"is_headshot"           (:is-headshot event)
+                          "attacker_loadout_id"   (:attacker-loadout-id event)
+                          "attacker_fire_mode_id" (:attacker-fire-mode-id event)
+                          "attacker_weapon_id"    (:attacker-weapon-id event)
+                          "attacker_vehicle_id"   (:attacker-vehicle-id event)
+                          "attacker_character_id" (:attacker-character-id event)
+                          "character_loadout_id"  (:character-loadout-id event)
+                          "character_id"          (:character-id event)
+                          "zone_id"               (:zone-id event)
+                          "world_id"              (:world-id event)
+                          "timestamp"             (:timestamp event)}))))
 
 (defn save-vehicle-destroy-event
     [ds event]
@@ -111,18 +112,19 @@
                       "world_id"              (:world-id event)
                       "timestamp"             (:timestamp event)})
 
-        (sql/insert! db-conn
-                     "vehicle_destroy_event"
-                     {"faction_id"            (:faction-id event)
-                      "attacker_loadout_id"   (:attacker-loadout-id event)
-                      "attacker_weapon_id"    (:attacker-weapon-id event)
-                      "attacker_vehicle_id"   (:attacker-vehicle-id event)
-                      "attacker_character_id" (:attacker-character-id event)
-                      "character_vehicle_id"  (:vehicle-id event) ; renamed in db
-                      "character_id"          (:character-id event)
-                      "zone_id"               (:zone-id event)
-                      "world_id"              (:world-id event)
-                      "timestamp"             (:timestamp event)})))
+        (if (not= (:attacker-character-id event) (:character-id event))
+            (sql/insert! db-conn
+                         "vehicle_destroy_event"
+                         {"faction_id"            (:faction-id event)
+                          "attacker_loadout_id"   (:attacker-loadout-id event)
+                          "attacker_weapon_id"    (:attacker-weapon-id event)
+                          "attacker_vehicle_id"   (:attacker-vehicle-id event)
+                          "attacker_character_id" (:attacker-character-id event)
+                          "character_vehicle_id"  (:vehicle-id event) ; renamed in db
+                          "character_id"          (:character-id event)
+                          "zone_id"               (:zone-id event)
+                          "world_id"              (:world-id event)
+                          "timestamp"             (:timestamp event)}))))
 
 (defn save-facility-defend-event
     [ds event]
@@ -169,9 +171,9 @@
                                      SELECT timestamp, 1 AS inferred FROM gain_experience_event WHERE character_id = ?
                                      ORDER BY timestamp ASC" character-id character-id])
          :xp (sql/query db-conn ["SELECT * FROM gain_experience_event WHERE character_id = ?" character-id])
-         :kills (sql/query db-conn ["SELECT * FROM kill_event WHERE attacker_character_id != character_id AND attacker_character_id = ?" character-id])
+         :kills (sql/query db-conn ["SELECT * FROM kill_event WHERE attacker_character_id = ?" character-id])
          :deaths (sql/query db-conn ["SELECT * FROM death_event WHERE character_id = ?" character-id])
-         :vehicle-kills (sql/query db-conn ["SELECT * FROM vehicle_destroy_event WHERE attacker_character_id != character_id AND attacker_character_id = ?" character-id])
+         :vehicle-kills (sql/query db-conn ["SELECT * FROM vehicle_destroy_event WHERE attacker_character_id = ?" character-id])
          :vehicle-deaths (sql/query db-conn ["SELECT * FROM vehicle_death_event WHERE character_id = ?" character-id])
          :facility-captures (sql/query db-conn ["SELECT * FROM facility_capture_event WHERE character_id = ?" character-id])
          :facility-defends (sql/query db-conn ["SELECT * FROM facility_defend_event WHERE character_id = ?" character-id])}))
