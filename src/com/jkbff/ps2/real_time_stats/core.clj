@@ -96,7 +96,7 @@
                                                  :characters (or (keys char-map) ["all"])
                                                  :worlds     servers
                                                  :eventNames ["GainExperience" "PlayerLogin" "PlayerLogout" "Death" "VehicleDestroy" "PlayerFacilityCapture" "PlayerFacilityDefend"]
-                                                 :logicalAndCharactersWithWorlds true}))
+                                                 :logicalAndCharactersWithWorlds (empty? char-map)}))
 
         [client1]))
 
