@@ -102,7 +102,7 @@
 
 (defn get-vehicle-destroy-stats
     [char-activity]
-    (let [vehicles-destroyed (filter #(not= 0 (:VEHICLE_DESTROY_EVENT/ATTACKER_VEHICLE_ID %)) (:vehicle-kills char-activity)) ; only count vehicles destroyed from a vehicle
+    (let [vehicles-destroyed (:vehicle-kills char-activity)
           grouped            (group-by :VEHICLE_DESTROY_EVENT/CHARACTER_VEHICLE_ID vehicles-destroyed)
           vehicle-map        (api/get-vehicles)
           mapped             (map (fn [[k v]] {:vehicle-id k
@@ -126,21 +126,21 @@
 
 (defn get-kills-by-weapon
     [char-activity]
-    (let [vehicles-destroyed (:vehicle-kills char-activity)
-          vehicles-grouped   (group-by :VEHICLE_DESTROY_EVENT/ATTACKER_WEAPON_ID vehicles-destroyed)
+    (let [;vehicles-destroyed (:vehicle-kills char-activity)
+          ;vehicles-grouped   (group-by :VEHICLE_DESTROY_EVENT/ATTACKER_WEAPON_ID vehicles-destroyed)
           infantry-killed    (:kills char-activity)
           infantry-grouped   (group-by :KILL_EVENT/ATTACKER_WEAPON_ID infantry-killed)
           weapon-map         (api/get-weapons)
           item-ids           (-> #{}
-                                 (into (keys vehicles-grouped))
+                                 ;(into (keys vehicles-grouped))
                                  (into (keys infantry-grouped)))
           mapped             (map #(hash-map :item-id %
                                              :item-name (get weapon-map (helper/int-to-string %) (str "Unknown(" % ")"))
-                                             :vehicle-count (count (get vehicles-grouped % []))
+                                             ;:vehicle-count (count (get vehicles-grouped % []))
                                              :infantry-count (count (get infantry-grouped % [])))
                                   item-ids)]
 
-        (reverse (sort-by #(+ (:vehicle-count %) (:infantry-count %)) mapped))))
+        (reverse (sort-by :infantry-count mapped))))
 
 (defn get-deaths-by-weapon
     [char-activity]
