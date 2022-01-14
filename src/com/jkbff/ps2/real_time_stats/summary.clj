@@ -91,12 +91,24 @@
                                       false) mapped)]
         filtered))
 
-(defn get-vehicle-kill-stats
+(defn get-weapon-names
+    [m weapon-id-key]
+    (let [weapon-map (api/get-weapons)
+          grouped (group-by weapon-id-key m)
+          mapped (map (fn [[k v]] {:id k :name (get weapon-map (helper/int-to-string k)) :amount (count v)}) grouped)
+          sorted (reverse (sort-by :amount mapped))
+          strings (map #(str "x" (:amount %) " " (:name %)) sorted)]
+        (clojure.string/join ", " strings)))
+
+(defn get-vehicle-destroy-stats
     [char-activity]
-    (let [vehicles-destroyed (filter #(not= "0" (:VEHICLE_DESTROY_EVENT/ATTACKER_VEHICLE_ID %)) (:vehicle-kills char-activity)) ; only count vehicles destroyed from a vehicle
+    (let [vehicles-destroyed (filter #(not= 0 (:VEHICLE_DESTROY_EVENT/ATTACKER_VEHICLE_ID %)) (:vehicle-kills char-activity)) ; only count vehicles destroyed from a vehicle
           grouped            (group-by :VEHICLE_DESTROY_EVENT/CHARACTER_VEHICLE_ID vehicles-destroyed)
           vehicle-map        (api/get-vehicles)
-          mapped             (map (fn [[k v]] {:vehicle-id k :name (get-in vehicle-map [(helper/int-to-string k) :name]) :amount (count v)}) grouped)
+          mapped             (map (fn [[k v]] {:vehicle-id k
+                                               :name (get-in vehicle-map [(helper/int-to-string k) :name])
+                                               :amount (count v)
+                                               :weapons (get-weapon-names v :VEHICLE_DESTROY_EVENT/ATTACKER_WEAPON_ID)}) grouped)
           filtered           (filter #(get-in vehicle-map [(helper/int-to-string (:vehicle-id %)) :cost]) mapped)]
         (reverse (sort-by :amount filtered))))
 
@@ -105,15 +117,12 @@
     (let [vehicles-lost (:vehicle-deaths char-activity)
           grouped       (group-by :VEHICLE_DEATH_EVENT/CHARACTER_VEHICLE_ID vehicles-lost)
           vehicle-map   (api/get-vehicles)
-          mapped        (map (fn [[k v]] {:vehicle-id k :name (get-in vehicle-map [(helper/int-to-string k) :name]) :amount (count v)}) grouped)
+          mapped        (map (fn [[k v]] {:vehicle-id k
+                                          :name (get-in vehicle-map [(helper/int-to-string k) :name])
+                                          :amount (count v)
+                                          :weapons (get-weapon-names v :VEHICLE_DEATH_EVENT/ATTACKER_WEAPON_ID)}) grouped)
           filtered      (filter #(get-in vehicle-map [(helper/int-to-string (:vehicle-id %)) :cost]) mapped)]
         (reverse (sort-by :amount filtered))))
-
-(defn get-weapon-name
-    [item-id]
-    (if (= 0 item-id)
-        "Ram/Crash/Fall"
-        (or (:name (api/get-item-info item-id)) (str "Unknown(" item-id ")"))))
 
 (defn get-kills-by-weapon
     [char-activity]
@@ -121,23 +130,37 @@
           vehicles-grouped   (group-by :VEHICLE_DESTROY_EVENT/ATTACKER_WEAPON_ID vehicles-destroyed)
           infantry-killed    (:kills char-activity)
           infantry-grouped   (group-by :KILL_EVENT/ATTACKER_WEAPON_ID infantry-killed)
+          weapon-map         (api/get-weapons)
           item-ids           (-> #{}
                                  (into (keys vehicles-grouped))
                                  (into (keys infantry-grouped)))
           mapped             (map #(hash-map :item-id %
-                                             :item-name (get-weapon-name %)
+                                             :item-name (get weapon-map (helper/int-to-string %) (str "Unknown(" % ")"))
                                              :vehicle-count (count (get vehicles-grouped % []))
                                              :infantry-count (count (get infantry-grouped % [])))
                                   item-ids)]
 
         (reverse (sort-by #(+ (:vehicle-count %) (:infantry-count %)) mapped))))
 
-(defn format-weapon-kills
+(defn get-deaths-by-weapon
+    [char-activity]
+    (let [infantry           (:deaths char-activity)
+          infantry-grouped   (group-by :DEATH_EVENT/ATTACKER_WEAPON_ID infantry)
+          weapon-map         (api/get-weapons)
+          item-ids           (keys infantry-grouped)
+          mapped             (map #(hash-map :item-id %
+                                             :item-name (get weapon-map (helper/int-to-string %) (str "Unknown(" % ")"))
+                                             :infantry-count (count (get infantry-grouped % [])))
+                                  item-ids)]
+
+        (reverse (sort-by :infantry-count mapped))))
+
+(defn format-weapon-stats
     [row]
-    (let [infantry-kills (:infantry-count row)
-          vehicle-kills  (:vehicle-count row)
+    (let [infantry       (:infantry-count row)
+          ;vehicle        (:vehicle-count row)
           weapon-name    (:item-name row)]
-        (str weapon-name " - `" infantry-kills "`, `" vehicle-kills "`")))
+        (str "x" infantry " " weapon-name)))
 
 (defn get-xp-stats
     [char-activity]
@@ -164,14 +187,16 @@
           char-activity             (events/get-char-activity ds character-id)
           ;xp-summary                (clojure.string/join "\n" (map format-exp-total (get-xp-stats char-activity)))
           summary                   (get-overall-summary char-activity)
-          vehicle-destroyed-summary (clojure.string/join "\n" (map #(str "x" (:amount %1) " - " (:name %1)) (get-vehicle-kill-stats char-activity)))
-          vehicle-lost-summary      (clojure.string/join "\n" (map #(str "x" (:amount %1) " - " (:name %1)) (get-vehicle-lost-stats char-activity)))
-          kills-by-weapon           (clojure.string/join "\n" (map format-weapon-kills (get-kills-by-weapon char-activity)))
+          vehicle-destroyed-summary (clojure.string/join "\n" (map #(str "x" (:amount %1) " " (:name %1) " - " (:weapons %1)) (get-vehicle-destroy-stats char-activity)))
+          vehicle-lost-summary      (clojure.string/join "\n" (map #(str "x" (:amount %1) " " (:name %1) " - " (:weapons %1)) (get-vehicle-lost-stats char-activity)))
+          kills-by-weapon           (clojure.string/join "\n" (map format-weapon-stats (get-kills-by-weapon char-activity)))
+          deaths-by-weapon          (clojure.string/join "\n" (map format-weapon-stats (get-deaths-by-weapon char-activity)))
           gunner-kills              (clojure.string/join "\n" (map #(str "x" (:amount %1) " - " (:name %1)) (get-gunner-kills char-activity)))
           fields                    [;{:name "XP (Top 10)" :value xp-summary}
-                                     {:name "Vehicles Destroyed" :value vehicle-destroyed-summary}
-                                     {:name "Vehicles Lost" :value vehicle-lost-summary}
-                                     {:name "Kills - By Weapon (Infantry, Vehicle)" :value kills-by-weapon}
+                                     {:name "Vehicle Kills" :value vehicle-destroyed-summary}
+                                     {:name "Vehicle Deaths" :value vehicle-lost-summary}
+                                     {:name "Infantry Kills" :value kills-by-weapon}
+                                     {:name "Infantry Deaths" :value deaths-by-weapon}
                                      {:name "Gunner Kills" :value gunner-kills}]]
 
         (if (not (empty? (:xp char-activity)))

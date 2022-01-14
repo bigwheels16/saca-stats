@@ -403,6 +403,17 @@
                        coll   (map #(assoc % :name (get-in % [:name LANG])) (:item-list body))]
                      (first coll)))))
 
+(def get-weapons
+    (memoize (fn []
+                 (let [url    (create-url "item" ["item_type_id" "26"
+                                                  "c:show" "item_id,name.en"
+                                                  "c:lang" "en"
+                                                  "c:limit" "2000"])
+                       result (client/get url)
+                       body   (helper/read-json (:body result))
+                       m      (reduce #(assoc %1 (:item-id %2) (get-in %2 [:name :en])) {} (:item-list body))]
+                     (assoc m "0" "Ram/Roadkill/Fall")))))
+
 (defn get-outfit-by-id
     [outfit-id]
     (let [url    (create-url "outfit" ["outfit_id" outfit-id
