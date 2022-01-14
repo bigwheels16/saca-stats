@@ -129,7 +129,8 @@
           char-map            (zipmap (map :character-id characters) characters)
           ds                  (db/get-db-pool)
           clients             (connect char-map (config/SUBSCRIBE_SERVERS) ds)
-          startup-msg         (str "SACA Stats (v12) has started! Tracking " (count characters) " characters and " (count (config/SUBSCRIBE_SERVERS)) " servers.")
+          version             (clojure.string/trim (slurp "version.txt"))
+          startup-msg         (str "SACA Stats (v" version ") has started!\nTracking " (count characters) " characters and " (count (config/SUBSCRIBE_SERVERS)) " servers.")
           untracked-chars     (get-untracked-chars char-map)
           is-connected-future (helper/callback-interval (partial is-connected? 60000) 30000)]
 
