@@ -88,6 +88,7 @@ INSERT INTO vehicle_info (vehicle_id, name) VALUES (2132, 'Reclaimed Valkyrie');
 INSERT INTO vehicle_info (vehicle_id, name) VALUES (2133, 'Reclaimed Magrider');
 INSERT INTO vehicle_info (vehicle_id, name) VALUES (2134, 'Reclaimed Vanguard');
 INSERT INTO vehicle_info (vehicle_id, name) VALUES (2135, 'Reclaimed Prowler');
+INSERT INTO vehicle_info (vehicle_id, name) VALUES (2136, 'Dervish');
 
 CREATE TABLE faction_info (faction_id INT PRIMARY KEY, name VARCHAR(50) NOT NULL, alias VARCHAR(4) NOT NULL);
 INSERT INTO faction_info (faction_id, name, alias) VALUES (0, "None", "None");
