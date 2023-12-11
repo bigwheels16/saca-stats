@@ -82,7 +82,7 @@
              "\nNanites Used: `" nanites-used "` Nanites Destroyed: `" nanites-destroyed "` Nanite Efficiency: `" nanite-efficiency "`"
              (if (> gunner-nanites-destroyed 0)
                  (str "\nGunner Nanites Destroyed: `" gunner-nanites-destroyed "` Total Nanite Efficiency: `" total-nanite-efficiency "`"))
-             "\n\Session Stats:" honu-session-stats-link)))
+             "\n\nSession Stats:" honu-session-stats-link)))
 
 (defn get-max-kills
     [char-activity]
