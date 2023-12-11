@@ -52,6 +52,10 @@
                                          (assoc % :vehicle-id vehicle-id)) gunner-kills)]
         (filter :vehicle-id gunner-vehicle-kills)))
 
+(defn get-honu-session-stats-link
+    [character-id]
+    "https://sacastats.com/")
+
 (defn get-overall-summary
     [char-activity]
     (let [login-time-obj           (first (:logon char-activity))
@@ -68,7 +72,8 @@
           nanites-destroyed        (reduce + 0 (map #(get-in vehicle-map [(helper/int-to-string (:VEHICLE_DESTROY_EVENT/CHARACTER_VEHICLE_ID %)) :cost] 0) (:vehicle-kills char-activity)))
           gunner-nanites-destroyed (reduce + 0 (map #(* (:amount %) (get-in vehicle-map [(helper/int-to-string (:vehicle-id %)) :cost] 0)) (get-gunner-vehicles-destroyed char-activity)))
           nanite-efficiency        (format-float (/ nanites-destroyed (if (zero? nanites-used) 1 nanites-used)))
-          total-nanite-efficiency  (format-float (/ (+ nanites-destroyed gunner-nanites-destroyed) (if (zero? nanites-used) 1 nanites-used)))]
+          total-nanite-efficiency  (format-float (/ (+ nanites-destroyed gunner-nanites-destroyed) (if (zero? nanites-used) 1 nanites-used)))
+          honu-session-stats-link  (get-honu-session-stats-link (:character-id char-activity))]
 
         (str "Time: " (str (helper/get-time-str total-time) (if (= 1 (:INFERRED login-time-obj)) "*"))
              "\nTotal XP: `" total-xp "` XP / min: `" xp-per-min "`"
@@ -76,7 +81,8 @@
              "\nFacilities Defended: `" num-facility-defended "` Facilities Captured: `" num-facility-captured "`"
              "\nNanites Used: `" nanites-used "` Nanites Destroyed: `" nanites-destroyed "` Nanite Efficiency: `" nanite-efficiency "`"
              (if (> gunner-nanites-destroyed 0)
-                 (str "\nGunner Nanites Destroyed: `" gunner-nanites-destroyed "` Total Nanite Efficiency: `" total-nanite-efficiency "`")))))
+                 (str "\nGunner Nanites Destroyed: `" gunner-nanites-destroyed "` Total Nanite Efficiency: `" total-nanite-efficiency "`"))
+             "\n\Session Stats:" honu-session-stats-link)))
 
 (defn get-max-kills
     [char-activity]
@@ -190,13 +196,13 @@
           vehicle-destroyed-summary (clojure.string/join "\n" (map #(str "x" (:amount %1) " " (:name %1) " - " (:weapons %1)) (get-vehicle-destroy-stats char-activity)))
           vehicle-lost-summary      (clojure.string/join "\n" (map #(str "x" (:amount %1) " " (:name %1) " - " (:weapons %1)) (get-vehicle-lost-stats char-activity)))
           kills-by-weapon           (clojure.string/join "\n" (map format-weapon-stats (get-kills-by-weapon char-activity)))
-          deaths-by-weapon          (clojure.string/join "\n" (map format-weapon-stats (get-deaths-by-weapon char-activity)))
+          deaths-by-weapon          (clojure.string/join "\n" (map format-weapon-stats (take 5 (get-deaths-by-weapon char-activity))))
           gunner-kills              (clojure.string/join "\n" (map #(str "x" (:amount %1) " - " (:name %1)) (get-gunner-kills char-activity)))
           fields                    [;{:name "XP (Top 10)" :value xp-summary}
                                      {:name "Vehicle Kills" :value vehicle-destroyed-summary}
                                      {:name "Vehicle Deaths" :value vehicle-lost-summary}
                                      {:name "Infantry Kills" :value kills-by-weapon}
-                                     {:name "Infantry Deaths" :value deaths-by-weapon}
+                                     {:name "Infantry Deaths (Top 5)" :value deaths-by-weapon}
                                      {:name "Gunner Kills" :value gunner-kills}]]
 
         (if (not (empty? (:xp char-activity)))
