@@ -54,7 +54,7 @@
 
 (defn get-honu-session-stats-link
     [character-id]
-    (let [url             (str "https://wt.honu.pw/api/character/" character_id "/honu-data")
+    (let [url             (str "https://wt.honu.pw/api/character/" character-id "/honu-data")
           result          (client/get url)
           body            (helper/read-json (:body result))
           honu-session-id (:sessionID body)]
