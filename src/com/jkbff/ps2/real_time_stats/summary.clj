@@ -4,7 +4,8 @@
               [com.jkbff.ps2.real-time-stats.discord :as discord]
               [com.jkbff.ps2.events.dao.events :as events]
               [clojure.spec.alpha :as s]
-              [clojure.tools.logging :as log]))
+              [clojure.tools.logging :as log]
+              [clj-http.client :as client]))
 
 
 (defn format-float
