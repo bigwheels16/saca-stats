@@ -54,7 +54,11 @@
 
 (defn get-honu-session-stats-link
     [character-id]
-    "https://sacastats.com/")
+    (let [url             (str "https://wt.honu.pw/api/character/" character_id "/honu-data")
+          result          (client/get url)
+          body            (helper/read-json (:body result))
+          honu-session-id (:sessionID body)]
+        (str "https://wt.honu.pw/s/" honu-session-id)))
 
 (defn get-overall-summary
     [char-activity]
@@ -82,7 +86,7 @@
              "\nNanites Used: `" nanites-used "` Nanites Destroyed: `" nanites-destroyed "` Nanite Efficiency: `" nanite-efficiency "`"
              (if (> gunner-nanites-destroyed 0)
                  (str "\nGunner Nanites Destroyed: `" gunner-nanites-destroyed "` Total Nanite Efficiency: `" total-nanite-efficiency "`"))
-             "\n\nSession Stats: " honu-session-stats-link)))
+             "\nHonu Session Stats: " honu-session-stats-link)))
 
 (defn get-max-kills
     [char-activity]
