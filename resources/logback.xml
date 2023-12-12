@@ -6,6 +6,7 @@
              ch.qos.logback.classic.encoder.PatternLayoutEncoder by default -->
         <encoder>
             <pattern>%d{HH:mm:ss.SSS} %-5level [%thread] \(%file:%line\) - %msg%n</pattern>
+            <!--<pattern>%d{HH:mm:ss.SSS} %-5level [%thread] \(%logger\) - %msg%n</pattern>-->
         </encoder>
     </appender>
 
@@ -25,7 +26,7 @@
 <!--        <triggeringPolicy class="com.jkbff.common.RollOncePerSessionTriggeringPolicy"/>-->
 <!--    </appender>-->
 
-    <logger name="com.jkbff" level="debug"/>
+    <logger name="com.jkbff" level="info"/>
 
     <root level="info">
         <appender-ref ref="STDOUT" />

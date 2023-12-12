@@ -167,7 +167,8 @@
 (defn get-char-activity
     [ds character-id]
     (with-open [db-conn (jdbc/get-connection ds)]
-        {:logon (sql/query db-conn ["SELECT timestamp, 0 AS inferred FROM player_login_event WHERE character_id = ? UNION ALL
+        {:character-id character-id
+         :logon (sql/query db-conn ["SELECT timestamp, 0 AS inferred FROM player_login_event WHERE character_id = ? UNION ALL
                                      SELECT timestamp, 1 AS inferred FROM gain_experience_event WHERE character_id = ?
                                      ORDER BY timestamp ASC" character-id character-id])
          :xp (sql/query db-conn ["SELECT * FROM gain_experience_event WHERE character_id = ?" character-id])
