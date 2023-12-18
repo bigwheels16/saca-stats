@@ -43,7 +43,7 @@
      ;"2134" {:cost mbt-cost}                                ; reclaimed vanguard
      ;"2135" {:cost mbt-cost}                                ; reclaimed prowler
      "2136" {:cost esf-cost}                                ; dervish
-     "2136" {:cost mbt-cost}                                ; chimera
+     "2137" {:cost mbt-cost}                                ; chimera
      "2142" {:cost 250}                                     ; corsair
      })
 
