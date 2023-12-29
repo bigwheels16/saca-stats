@@ -1,6 +1,7 @@
 (ns com.jkbff.ps2.real-time-stats.discord
     (:require [com.jkbff.ps2.real-time-stats.config :as config]
               [com.jkbff.helper :as helper]
+              [clojure.tools.logging :as log]
               [clj-http.client :as client]))
 
 (def DISCORD_MAX_MESSAGES 15)
@@ -41,6 +42,7 @@
           json (helper/write-json obj)]
 
         (swap! discord-message-state wait-for-available-message DISCORD_MAX_MESSAGES DISCORD_MESSAGE_RECOVERY_TIME)
+        (log/info (str "sending payload to discord with size '" (count json) "'"))
 
         (client/post (config/DISCORD_WEBHOOK_URL) {:body    json
                                                    :headers {"Content-Type" "application/json"}})))
