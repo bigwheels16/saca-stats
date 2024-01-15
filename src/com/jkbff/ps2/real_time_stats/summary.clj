@@ -82,12 +82,12 @@
 
         (str "Time: " (str (helper/get-time-str total-time) (if (= 1 (:INFERRED login-time-obj)) "*"))
              "\nTotal XP: `" total-xp "` XP / min: `" xp-per-min "`"
-             "\nKills: `" num-kills "` Deaths: `" num-deaths "` K/D: `" kd "`"
-             "\nFacilities Defended: `" num-facility-defended "` Facilities Captured: `" num-facility-captured "`"
-             "\nNanites Used: `" nanites-used "` Nanites Destroyed: `" nanites-destroyed "` Nanite Efficiency: `" nanite-efficiency "`"
+             "\nK/D: `" num-kills "`/`" num-deaths "` (`" kd "`)"
+             "\nFacilities Defended: `" num-facility-defended "` Captured: `" num-facility-captured "`"
+             "\nNanites Destroyed/Used: `" nanites-destroyed "`/`" nanites-used "` (`" nanite-efficiency "`)"
              (if (> gunner-nanites-destroyed 0)
                  (str "\nGunner Nanites Destroyed: `" gunner-nanites-destroyed "` Total Nanite Efficiency: `" total-nanite-efficiency "`"))
-             "\nHonu Session Stats: " honu-session-stats-link)))
+             "\nHonu Session: " honu-session-stats-link)))
 
 (defn get-max-kills
     [char-activity]
