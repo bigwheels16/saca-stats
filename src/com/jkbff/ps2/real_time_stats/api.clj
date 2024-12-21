@@ -12,6 +12,14 @@
 (def mbt-cost 450)
 (def esf-cost 350)
 
+; https://census.daybreakgames.com/get/ps2:v2/loadout?c:limit=100
+(def max-loadout-ids
+  ["7"  ; NC Max
+   "14" ; TR Max
+   "21" ; VS Max
+   "45" ; NSO Max
+   ])
+
 ; https://census.daybreakgames.com/get/ps2:v2/vehicle?c:limit=2000
 (def vehicle-costs
     {"1"  {:cost 50}                                        ; flash
