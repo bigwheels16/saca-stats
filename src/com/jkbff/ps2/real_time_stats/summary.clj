@@ -73,7 +73,7 @@
           vehicle-map              (api/get-vehicles)
           num-facility-captured    (count (:facility-captures char-activity))
           num-facility-defended    (count (:facility-defends char-activity))
-          maxes-killed             (count (filter (fn [item] (some #(= (:character-loadout-id item) %) api/max-loadout-ids)) (:kills char-activity)))
+          maxes-killed             (count (filter (fn [item] (some #(= (:KILL_EVENT/CHARACTER_LOADOUT_ID item) %) api/max-loadout-ids)) (:kills char-activity)))
           nanites-used             (reduce + 0 (map #(get-in vehicle-map [(helper/int-to-string (:VEHICLE_DEATH_EVENT/CHARACTER_VEHICLE_ID %)) :cost] 0) (:vehicle-deaths char-activity)))
           nanites-destroyed        (reduce + 0 (map #(get-in vehicle-map [(helper/int-to-string (:VEHICLE_DESTROY_EVENT/CHARACTER_VEHICLE_ID %)) :cost] 0) (:vehicle-kills char-activity)))
           gunner-nanites-destroyed (reduce + 0 (map #(* (:amount %) (get-in vehicle-map [(helper/int-to-string (:vehicle-id %)) :cost] 0)) (get-gunner-vehicles-destroyed char-activity)))
