@@ -83,7 +83,7 @@
       
       
         ; DEBUG
-        (log/info (str (:kills char-activity)))
+        (log/info (pr-str (:kills char-activity)))
 
         (str "Time: " (str (helper/get-time-str total-time) (if (= 1 (:INFERRED login-time-obj)) "*"))
              "\nTotal XP: `" total-xp "` XP / min: `" xp-per-min "`"
