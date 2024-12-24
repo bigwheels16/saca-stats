@@ -80,6 +80,10 @@
           nanite-efficiency        (format-float (/ nanites-destroyed (if (zero? nanites-used) 1 nanites-used)))
           total-nanite-efficiency  (format-float (/ (+ nanites-destroyed gunner-nanites-destroyed) (if (zero? nanites-used) 1 nanites-used)))
           honu-session-stats-link  (get-honu-session-stats-link (:character-id char-activity))]
+      
+      
+        ; DEBUG
+        (log/info (str char-activity))
 
         (str "Time: " (str (helper/get-time-str total-time) (if (= 1 (:INFERRED login-time-obj)) "*"))
              "\nTotal XP: `" total-xp "` XP / min: `" xp-per-min "`"
