@@ -73,24 +73,21 @@
           vehicle-map              (api/get-vehicles)
           num-facility-captured    (count (:facility-captures char-activity))
           num-facility-defended    (count (:facility-defends char-activity))
-          maxes-killed             (count (filter (fn [item] (some #(= (helper/int-to-string (:KILL_EVENT/CHARACTER_LOADOUT_ID item)) %) api/max-loadout-ids)) (:kills char-activity)))
+          max-kills                (count (filter (fn [item] (some #(= (helper/int-to-string (:KILL_EVENT/CHARACTER_LOADOUT_ID item)) %) api/max-loadout-ids)) (:kills char-activity)))
+          max-deaths               (count (filter (fn [item] (some #(= (helper/int-to-string (:KILL_EVENT/CHARACTER_LOADOUT_ID item)) %) api/max-loadout-ids)) (:deaths char-activity)))
           nanites-used             (reduce + 0 (map #(get-in vehicle-map [(helper/int-to-string (:VEHICLE_DEATH_EVENT/CHARACTER_VEHICLE_ID %)) :cost] 0) (:vehicle-deaths char-activity)))
-          nanites-destroyed        (reduce + 0 (map #(get-in vehicle-map [(helper/int-to-string (:VEHICLE_DESTROY_EVENT/CHARACTER_VEHICLE_ID %)) :cost] 0) (:vehicle-kills char-activity)))
+          nanites-destroyed        (+ (* max-kills api/max-cost) (reduce + 0 (map #(get-in vehicle-map [(helper/int-to-string (:VEHICLE_DESTROY_EVENT/CHARACTER_VEHICLE_ID %)) :cost] 0) (:vehicle-kills char-activity))))
           gunner-nanites-destroyed (reduce + 0 (map #(* (:amount %) (get-in vehicle-map [(helper/int-to-string (:vehicle-id %)) :cost] 0)) (get-gunner-vehicles-destroyed char-activity)))
           nanite-efficiency        (format-float (/ nanites-destroyed (if (zero? nanites-used) 1 nanites-used)))
           total-nanite-efficiency  (format-float (/ (+ nanites-destroyed gunner-nanites-destroyed) (if (zero? nanites-used) 1 nanites-used)))
           honu-session-stats-link  (get-honu-session-stats-link (:character-id char-activity))]
-      
-      
-        ; DEBUG
-        (log/info (pr-str (:kills char-activity)))
 
         (str "Time: " (str (helper/get-time-str total-time) (if (= 1 (:INFERRED login-time-obj)) "*"))
              "\nTotal XP: `" total-xp "` XP / min: `" xp-per-min "`"
              "\nK/D: `" num-kills "`/`" num-deaths "` (`" kd "`)"
              "\nFacilities Defended: `" num-facility-defended "` Captured: `" num-facility-captured "`"
              "\nNanites Destroyed/Used: `" nanites-destroyed "`/`" nanites-used "` (`" nanite-efficiency "`)"
-             "\nMaxes Killed: `" maxes-killed "`"
+             "\nMaxes K/D: `" max-kills "`/`" max-deaths "`"
              (if (> gunner-nanites-destroyed 0)
                  (str "\nGunner Nanites Destroyed: `" gunner-nanites-destroyed "` Total Nanite Efficiency: `" total-nanite-efficiency "`"))
              "\nHonu Session: " honu-session-stats-link)))

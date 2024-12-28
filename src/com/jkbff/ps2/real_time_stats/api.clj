@@ -11,6 +11,7 @@
 
 (def mbt-cost 450)
 (def esf-cost 350)
+(def max-cost 450)
 
 ; https://census.daybreakgames.com/get/ps2:v2/loadout?c:limit=100
 (def max-loadout-ids
