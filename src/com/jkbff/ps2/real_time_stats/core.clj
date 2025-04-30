@@ -126,11 +126,12 @@
     (if (config/IS_DEV)
         (stest/instrument))
 
-    (let [characters          (concat (api/get-characters (config/SUBSCRIBE_CHARACTERS)) (get-outfit-characters (config/SUBSCRIBE_OUTFITS)))
+    (let [version             (clojure.string/trim (slurp "version.txt"))
+          _                   (log/info "starting... version: " version)
+          characters          (concat (api/get-characters (config/SUBSCRIBE_CHARACTERS)) (get-outfit-characters (config/SUBSCRIBE_OUTFITS)))
           char-map            (zipmap (map :character-id characters) characters)
           ds                  (db/get-db-pool)
           clients             (connect char-map (config/SUBSCRIBE_SERVERS) ds)
-          version             (clojure.string/trim (slurp "version.txt"))
           startup-msg         (str "SACA Stats (v" version ") has started!\nTracking " (count characters) " characters and " (count (config/SUBSCRIBE_SERVERS)) " servers.")
           untracked-chars     (get-untracked-chars char-map)
           is-connected-future (helper/callback-interval (partial is-connected? 60000) 30000)]
