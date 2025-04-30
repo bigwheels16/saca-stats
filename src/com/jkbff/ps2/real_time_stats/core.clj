@@ -136,6 +136,7 @@
           is-connected-future (helper/callback-interval (partial is-connected? 60000) 30000)]
 
         (events/create-event-tables ds)
+        (events/populate-loadout-table (vals (api/get-loadouts)) ds)
 
         (if (not (empty? untracked-chars))
             (let [error-msg (str "Untracked chars: " (clojure.string/join "," untracked-chars))]

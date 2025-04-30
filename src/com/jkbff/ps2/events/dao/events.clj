@@ -17,7 +17,19 @@
             CREATE TABLE IF NOT EXISTS facility_defend_event (id INT PRIMARY KEY AUTO_INCREMENT, character_id BIGINT NOT NULL, outfit_id BIGINT NOT NULL, facility_id INT NOT NULL, zone_id INT NOT NULL, world_id TINYINT NOT NULL, timestamp INT NOT NULL);
             CREATE TABLE IF NOT EXISTS facility_capture_event (id INT PRIMARY KEY AUTO_INCREMENT, character_id BIGINT NOT NULL, outfit_id BIGINT NOT NULL, facility_id INT NOT NULL, zone_id INT NOT NULL, world_id TINYINT NOT NULL, timestamp INT NOT NULL);
             CREATE TABLE IF NOT EXISTS facility_control_event (id INT PRIMARY KEY AUTO_INCREMENT, duration_held INT NOT NULL, facility_id INT NOT NULL, old_faction_id INT NOT NULL, new_faction_id INT NOT NULL, outfit_id BIGINT NOT NULL, zone_id INT NOT NULL, world_id TINYINT NOT NULL, timestamp INT NOT NULL);
+            CREATE TABLE IF NOT EXISTS loadout (loadout_id TINYINT NOT NULL, profile_id TINYINT NOT NULL, faction_id TINYINT NOT NULL, code_name VARCHAR(20) NOT NULL);
             "])))
+
+(defn populate-loadout-table
+  [loadouts ds]
+  (with-open [db-conn (jdbc/get-connection ds)]
+    (doseq [row loadouts]
+      (sql/insert! db-conn
+                   "loadout"
+                   {"loadout_id" (:loadout-id row)
+                    "profile_id"     (:profile-id row)
+                    "faction_id"    (:faction-id row)
+                    "code_name"  (:code-name row)}))))
 
 (defn delete-player-events
     [ds character-id timestamp]
