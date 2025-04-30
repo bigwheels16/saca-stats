@@ -17,7 +17,7 @@
             CREATE TABLE IF NOT EXISTS facility_defend_event (id INT PRIMARY KEY AUTO_INCREMENT, character_id BIGINT NOT NULL, outfit_id BIGINT NOT NULL, facility_id INT NOT NULL, zone_id INT NOT NULL, world_id TINYINT NOT NULL, timestamp INT NOT NULL);
             CREATE TABLE IF NOT EXISTS facility_capture_event (id INT PRIMARY KEY AUTO_INCREMENT, character_id BIGINT NOT NULL, outfit_id BIGINT NOT NULL, facility_id INT NOT NULL, zone_id INT NOT NULL, world_id TINYINT NOT NULL, timestamp INT NOT NULL);
             CREATE TABLE IF NOT EXISTS facility_control_event (id INT PRIMARY KEY AUTO_INCREMENT, duration_held INT NOT NULL, facility_id INT NOT NULL, old_faction_id INT NOT NULL, new_faction_id INT NOT NULL, outfit_id BIGINT NOT NULL, zone_id INT NOT NULL, world_id TINYINT NOT NULL, timestamp INT NOT NULL);
-            CREATE TABLE IF NOT EXISTS loadout (loadout_id TINYINT NOT NULL, profile_id TINYINT NOT NULL, faction_id TINYINT NOT NULL, code_name VARCHAR(20) NOT NULL);
+            CREATE TABLE IF NOT EXISTS loadout (loadout_id TINYINT NOT NULL, profile_id SMALLINT NOT NULL, faction_id TINYINT NOT NULL, code_name VARCHAR(20) NOT NULL);
             "])))
 
 (defn populate-loadout-table
@@ -189,6 +189,11 @@
                                      LEFT JOIN loadout l_attacker ON e.attacher_loadout_id = l_attacker.loadout_id
                                      LEFT JOIN loadout l_character ON e.character_loadout_id = l_character.loadout_id
                                      WHERE attacker_character_id = ? AND attacker_faction_id != character_faction_id" character-id])
+         :team-kills (sql/query db-conn ["SELECT e.*, l_attacker.faction_id AS attacker_faction_id, l_character.faction_id AS character_faction_id
+                                          FROM kill_event e
+                                          LEFT JOIN loadout l_attacker ON e.attacher_loadout_id = l_attacker.loadout_id
+                                          LEFT JOIN loadout l_character ON e.character_loadout_id = l_character.loadout_id
+                                          WHERE attacker_character_id = ? AND attacker_faction_id = character_faction_id" character-id])
          :deaths (sql/query db-conn ["SELECT * FROM death_event WHERE character_id = ?" character-id])
          :vehicle-kills (sql/query db-conn ["SELECT * FROM vehicle_destroy_event WHERE attacker_character_id = ?" character-id])
          :vehicle-deaths (sql/query db-conn ["SELECT * FROM vehicle_death_event WHERE character_id = ?" character-id])
