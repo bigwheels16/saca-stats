@@ -184,7 +184,11 @@
                                      SELECT timestamp, 1 AS inferred FROM gain_experience_event WHERE character_id = ?
                                      ORDER BY timestamp ASC" character-id character-id])
          :xp (sql/query db-conn ["SELECT * FROM gain_experience_event WHERE character_id = ?" character-id])
-         :kills (sql/query db-conn ["SELECT * FROM kill_event WHERE attacker_character_id = ?" character-id])
+         :kills (sql/query db-conn ["SELECT e.*, l_attacker.faction_id AS attacker_faction_id, l_character.faction_id AS character_faction_id
+                                     FROM kill_event e
+                                     LEFT JOIN loadout l_attacker ON e.attacher_loadout_id = l_attacker.loadout_id
+                                     LEFT JOIN loadout l_character ON e.character_loadout_id = l_character.loadout_id
+                                     WHERE attacker_character_id = ? AND attacker_faction_id != character_faction_id" character-id])
          :deaths (sql/query db-conn ["SELECT * FROM death_event WHERE character_id = ?" character-id])
          :vehicle-kills (sql/query db-conn ["SELECT * FROM vehicle_destroy_event WHERE attacker_character_id = ?" character-id])
          :vehicle-deaths (sql/query db-conn ["SELECT * FROM vehicle_death_event WHERE character_id = ?" character-id])

@@ -68,6 +68,7 @@
           total-xp                 (get-total-xp (:xp char-activity))
           xp-per-min               (quot (* total-xp 60) total-time)
           num-kills                (count (:kills char-activity))
+          num-team-kills           (count (:team-kills char-activity))
           num-deaths               (count (:deaths char-activity))
           kd                       (format-float (/ num-kills (if (zero? num-deaths) 1 num-deaths)))
           vehicle-map              (api/get-vehicles)
@@ -84,7 +85,7 @@
 
         (str "Time: " (str (helper/get-time-str total-time) (if (= 1 (:INFERRED login-time-obj)) "*"))
              "\nTotal XP: `" total-xp "` XP / min: `" xp-per-min "`"
-             "\nK/D: `" num-kills "`/`" num-deaths "` (`" kd "`)"
+             "\nK/D/T: `" num-kills "`/`" num-deaths "`/`" num-team-kills "` (`" kd "`)"
              "\nFacilities Defended: `" num-facility-defended "` Captured: `" num-facility-captured "`"
              "\nNanites Destroyed/Used: `" nanites-destroyed "`/`" nanites-used "` (`" nanite-efficiency "`)"
              "\nMaxes K/D: `" max-kills "`/`" max-deaths "`"
