@@ -186,12 +186,12 @@
          :xp (sql/query db-conn ["SELECT * FROM gain_experience_event WHERE character_id = ?" character-id])
          :kills (sql/query db-conn ["SELECT e.*, l_attacker.faction_id AS attacker_faction_id, l_character.faction_id AS character_faction_id
                                      FROM kill_event e
-                                     LEFT JOIN loadout l_attacker ON e.attacher_loadout_id = l_attacker.loadout_id
+                                     LEFT JOIN loadout l_attacker ON e.attacker_loadout_id = l_attacker.loadout_id
                                      LEFT JOIN loadout l_character ON e.character_loadout_id = l_character.loadout_id
                                      WHERE attacker_character_id = ? AND l_attacker.faction_id != l_character.faction_id" character-id])
          :team-kills (sql/query db-conn ["SELECT e.*, l_attacker.faction_id AS attacker_faction_id, l_character.faction_id AS character_faction_id
                                           FROM kill_event e
-                                          LEFT JOIN loadout l_attacker ON e.attacher_loadout_id = l_attacker.loadout_id
+                                          LEFT JOIN loadout l_attacker ON e.attacker_loadout_id = l_attacker.loadout_id
                                           LEFT JOIN loadout l_character ON e.character_loadout_id = l_character.loadout_id
                                           WHERE attacker_character_id = ? AND l_attacker.faction_id = l_character.faction_id" character-id])
          :deaths (sql/query db-conn ["SELECT * FROM death_event WHERE character_id = ?" character-id])
