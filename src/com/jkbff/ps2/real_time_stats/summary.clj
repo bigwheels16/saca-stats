@@ -190,8 +190,8 @@
           faction-id   (:faction-id char-details)
           faction      (get-in (api/get-factions) [faction-id :code-tag])
           world-id     (or (:world-id char-details) (get-in char-details [:world :world-id]))
-          world        (get-in (api/get-worlds) [world-id :name])]
-        (str char-name " (" faction " " world ") - " character-id)))
+          world        (get (api/world-ids) world-id (str "Unknown(" world-id ")"))]
+      (str char-name " (" faction " " world ") - " character-id)))
 
 (defn print-stats
     [ds character-id]

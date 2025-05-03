@@ -21,6 +21,14 @@
    "45" ; NSO Max
    ])
 
+; https://census.daybreakgames.com/get/ps2:v2/world?c:limit=100
+(def world-ids
+  {"40" "SolTech"
+   "19" "Jaeger"
+   "24" "Apex"
+   "10" "Osprey"
+   "25" "Briggs"})
+
 ; https://census.daybreakgames.com/get/ps2:v2/vehicle?c:limit=2000
 (def vehicle-costs
     {"1"  {:cost 50}                                        ; flash
