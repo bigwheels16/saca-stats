@@ -26,7 +26,7 @@
   {"40" "SolTech"
    "19" "Jaeger"
    "24" "Apex"
-   "10" "Osprey"
+   "1"  "Osprey"
    "25" "Briggs"})
 
 ; https://census.daybreakgames.com/get/ps2:v2/vehicle?c:limit=2000
